@@ -38,7 +38,7 @@ Send a message to the example agent:
 ```bash
 curl -N http://localhost:3000/chat \
   -H "Content-Type: application/json" \
-  -d '{"messages":[{"role":"user","parts":[{"type":"text","text":"What can you do?"}]}]}'
+  -d '{"messages":[{"id":"1","role":"user","parts":[{"type":"text","text":"What can you do?"}]}]}'
 ```
 
 You should see the response arrive as a stream.
