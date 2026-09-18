@@ -204,3 +204,5 @@ flowchart TB
 | `common/` | Identity: `RequestContext`, auth, shared guards/filters |
 
 If a change fits more than one row, split it - do not stretch a layer past its ownership.
+
+Next: [Adding features](./02-adding-features.md).

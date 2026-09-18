@@ -239,3 +239,5 @@ Useful for typed REST clients (`GET /conversations/:id`). Not useful as the prim
 ## Takeaway
 
 Streaming chat through the AI SDK, REST through ordinary HTTP, identity through headers that populate `RequestContext`, and destructive tools behind human approval. The sample UI is a **parts -> components** map: change Nest contracts first, then decide whether JSON fallback, a custom card, or an approval flow is enough. Lock the UI with [Playwright demo tests](./05-playwright-ui-tests.md) so approvals and cards stay green without a live model.
+
+Next: [Browser tests with Playwright](./05-playwright-ui-tests.md).
