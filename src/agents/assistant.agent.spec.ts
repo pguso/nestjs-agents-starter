@@ -1,76 +1,119 @@
-import { describe, expect, it, vi } from 'vitest';
-import { MockLanguageModelV3 } from 'ai/test';
+import { describe, expect, it } from 'vitest';
 import { AssistantAgent } from './assistant.agent.js';
 import { OrderLookupTool } from '../tools/order-lookup.tool.js';
 import { ListOrdersTool } from '../tools/list-orders.tool.js';
 import { OrdersService } from '../tools/orders.service.js';
 import type { ModelService } from '../model/model.service.js';
+import {
+  createScriptedModel,
+  toolErrors,
+  toolOutputs,
+} from '../testing/mock-language-model.js';
 
-const testUsage = {
-  inputTokens: {
-    total: 10,
-    noCache: 10,
-    cacheRead: undefined,
-    cacheWrite: undefined,
-  },
-  outputTokens: {
-    total: 10,
-    text: 10,
-    reasoning: undefined,
-  },
-};
+function createAgent(model: ReturnType<typeof createScriptedModel>['model']) {
+  const orders = new OrdersService();
+  const modelService = {
+    getModel: () => model,
+  } as unknown as ModelService;
+
+  return new AssistantAgent(
+    modelService,
+    new OrderLookupTool(orders),
+    new ListOrdersTool(orders),
+  ).create({ userId: 'demo-user' }, model);
+}
 
 describe('AssistantAgent', () => {
-  it('calls lookupOrder with the model-requested order id', async () => {
-    const orders = new OrdersService();
-    const findSpy = vi.spyOn(orders, 'findForUser');
+  it('returns lookupOrder tool output matching real order state', async () => {
+    const { model } = createScriptedModel([
+      [
+        {
+          toolCallId: 'call-1',
+          toolName: 'lookupOrder',
+          input: { orderId: 'ord_1001' },
+        },
+      ],
+      'stop',
+    ]);
 
-    let callCount = 0;
-    const model = new MockLanguageModelV3({
-      doGenerate: async () => {
-        callCount += 1;
-        if (callCount === 1) {
-          return {
-            content: [
-              {
-                type: 'tool-call' as const,
-                toolCallId: 'call-1',
-                toolName: 'lookupOrder',
-                input: JSON.stringify({ orderId: 'ord_1001' }),
-              },
-            ],
-            finishReason: { unified: 'tool-calls' as const, raw: undefined },
-            usage: testUsage,
-            warnings: [],
-          };
-        }
-
-        return {
-          content: [{ type: 'text' as const, text: 'Order ord_1001 is shipped.' }],
-          finishReason: { unified: 'stop' as const, raw: undefined },
-          usage: testUsage,
-          warnings: [],
-        };
-      },
-    });
-
-    const modelService = {
-      getModel: () => model,
-    } as unknown as ModelService;
-
-    const agentFactory = new AssistantAgent(
-      modelService,
-      new OrderLookupTool(orders),
-      new ListOrdersTool(orders),
-    );
-
-    const agent = agentFactory.create({ userId: 'demo-user' }, model);
-    const result = await agent.generate({
+    const result = await createAgent(model).generate({
       prompt: 'What is the status of order ord_1001?',
     });
 
-    expect(findSpy).toHaveBeenCalledWith('demo-user', 'ord_1001');
-    expect(callCount).toBe(2);
-    expect(result.text).toContain('ord_1001');
+    expect(toolOutputs(result)).toContainEqual({
+      toolName: 'lookupOrder',
+      output: {
+        id: 'ord_1001',
+        status: 'shipped',
+        totalCents: 4299,
+        items: ['NestJS sticker pack', 'Agent mug'],
+      },
+    });
+  });
+
+  it('returns listOrders tool output for the current user only', async () => {
+    const { model } = createScriptedModel([
+      [{ toolCallId: 'call-1', toolName: 'listOrders', input: {} }],
+      'stop',
+    ]);
+
+    const result = await createAgent(model).generate({
+      prompt: 'List my orders',
+    });
+
+    expect(toolOutputs(result)).toContainEqual({
+      toolName: 'listOrders',
+      output: [
+        { id: 'ord_1001', status: 'shipped', totalCents: 4299 },
+        { id: 'ord_1002', status: 'pending', totalCents: 1999 },
+      ],
+    });
+  });
+
+  it('surfaces a tool error when looking up another users order', async () => {
+    const { model } = createScriptedModel([
+      [
+        {
+          toolCallId: 'call-1',
+          toolName: 'lookupOrder',
+          input: { orderId: 'ord_2001' },
+        },
+      ],
+      'stop',
+    ]);
+
+    const result = await createAgent(model).generate({
+      prompt: 'Look up ord_2001',
+    });
+
+    const errors = toolErrors(result);
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatchObject({
+      type: 'tool-error',
+      toolName: 'lookupOrder',
+    });
+    expect(String((errors[0] as { error?: unknown }).error)).toMatch(
+      /not found/i,
+    );
+    expect(toolOutputs(result)).toEqual([]);
+  });
+
+  it('stops after the step budget instead of looping forever', async () => {
+    const { model, getCallCount } = createScriptedModel(
+      Array.from({ length: 20 }, (_, i) => [
+        {
+          toolCallId: `call-${i}`,
+          toolName: 'listOrders',
+          input: {},
+        },
+      ]),
+    );
+
+    const result = await createAgent(model).generate({
+      prompt: 'Keep listing orders',
+    });
+
+    expect(result.steps.length).toBe(8);
+    expect(getCallCount()).toBe(8);
   });
 });

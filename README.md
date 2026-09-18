@@ -98,7 +98,7 @@ The `/chat` endpoint speaks the AI SDK UI message stream protocol, so a React ap
 npm test
 ```
 
-Agent tests run against a mock model, so they are fast, free and deterministic. They check that the right tools are called with the right input, not that the model says anything in particular. Wording changes between models and versions; tool calls are the part your application actually depends on.
+Tests follow the Chicago/Detroit (classicist) school: real collaborators, doubles only at the LLM boundary, and assertions on observable outcomes (tool results, store contents, HTTP)—not model wording or internal spies. See [docs/testing.md](docs/testing.md) for principles, the behavior inventory, and how to mock the model in agent and e2e specs.
 
 ## Versions
 
