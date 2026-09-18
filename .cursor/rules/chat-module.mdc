@@ -1,0 +1,13 @@
+---
+description: Chat HTTP, streaming, and conversation store
+globs: src/chat/**/*.ts
+alwaysApply: false
+---
+
+# Chat module
+
+- Controllers own `@Res()`, abort-on-disconnect, and UI message streaming — not agents.
+- Persist via `ConversationStore` keyed by `(userId, conversationId)` only.
+- Swap stores in `ChatModule` (`CONVERSATION_STORE`); do not change agents when swapping persistence.
+- Document stream endpoints in Swagger but note Try-it-out limits (`docs/lessons/03-swagger-openapi.md`).
+- DTOs: `class-validator` + `@ApiProperty` / `@ApiPropertyOptional`.

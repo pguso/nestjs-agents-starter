@@ -1,0 +1,13 @@
+---
+description: Sample chat-ui React + useChat conventions
+globs: examples/chat-ui/**/*.{ts,tsx,css}
+alwaysApply: false
+---
+
+# Chat UI (examples/chat-ui)
+
+- Streams against Nest `POST /chat` with AI SDK UI message protocol (`useChat`).
+- Tool calls render as cards; destructive tools (e.g. `cancelOrder`) use Approve/Reject (`needsApproval`).
+- Plain CSS, no UI component library — keep that unless the user asks otherwise.
+- New Nest tools: at minimum they appear as JSON cards; optionally add empty-state suggestions, dedicated renderers, or approval UI — see `docs/lessons/04-react-frontend.md`.
+- Playwright: demo mode (`?demo`) for CI; live LLM is opt-in. Nested notes: `examples/chat-ui/AGENTS.md`.

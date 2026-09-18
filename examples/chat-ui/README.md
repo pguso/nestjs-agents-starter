@@ -6,6 +6,8 @@ can delete or copy into your own app.
 
 For the full design/wiring guide (parts adapter, tool cards, approvals, extending
 for new Nest tools), see [Lesson 4](../../docs/lessons/04-react-frontend.md).
+AI coding agents working in this folder should follow [AGENTS.md](./AGENTS.md)
+(and the repo root [AGENTS.md](../../AGENTS.md)).
 
 ## Run
 

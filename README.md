@@ -38,6 +38,7 @@ npm run start:dev
 - OpenAPI: [http://localhost:3000/docs](http://localhost:3000/docs)
 - Health: [http://localhost:3000/health](http://localhost:3000/health)
 - Lessons: [docs/lessons](docs/lessons)
+- AI coding tools: [AGENTS.md](AGENTS.md) · [lesson 6](docs/lessons/06-ai-assisted-development.md)
 - Deployment: [docs/deployment.md](docs/deployment.md)
 
 Send a message to the example agent:
@@ -79,8 +80,23 @@ Compose defaults to `AI_PROVIDER=ollama`. Override with a `.env` file if you pre
 | 3 | [Swagger / OpenAPI](docs/lessons/03-swagger-openapi.md) | Documenting the API, streaming limits |
 | 4 | [React frontend](docs/lessons/04-react-frontend.md) | `useChat` wiring, tool cards / approvals, extending for new tools |
 | 5 | [Browser tests with Playwright](docs/lessons/05-playwright-ui-tests.md) | Demo vs live UI e2e, writing Playwright tests |
+| 6 | [AI-assisted development](docs/lessons/06-ai-assisted-development.md) | Cursor, Codex, Claude Code, Copilot - prompts and review checklist |
 
 Full index: [docs/lessons](docs/lessons). Also see [deployment](docs/deployment.md).
+
+### AI coding tools
+
+This repo ships rules for common agents so they respect the Nest layer boundaries:
+
+| File | Environment |
+|------|-------------|
+| [AGENTS.md](AGENTS.md) | Canonical (Codex, Cursor, others) |
+| [CLAUDE.md](CLAUDE.md) | Claude Code |
+| [.cursor/rules/](.cursor/rules/) | Cursor |
+| [.github/copilot-instructions.md](.github/copilot-instructions.md) | GitHub Copilot |
+| [.windsurfrules](.windsurfrules) | Windsurf |
+
+Start from [lesson 6](docs/lessons/06-ai-assisted-development.md) if you will extend the template with an AI coding tool.
 
 ## Production checklist
 

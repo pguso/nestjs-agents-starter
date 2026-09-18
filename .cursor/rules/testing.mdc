@@ -1,0 +1,16 @@
+---
+description: Classicist Vitest patterns for this repo
+globs: "**/*.spec.ts,test/**/*.ts,src/testing/**/*.ts"
+alwaysApply: false
+---
+
+# Testing
+
+Full guide: `docs/testing.md`.
+
+- Prefer sociable tests with real `OrdersService`, tools, and in-memory store.
+- Double only the LLM via `MockLanguageModelV3` / `src/testing/mock-language-model.ts`.
+- Assert HTTP status/body, store contents, tool return values — not model prose or `toHaveBeenCalledWith` on internals.
+- Do not mock tools inside agent tests or `OrdersService` inside tool tests.
+- Default CI must not call live providers; `LIVE_LLM_TEST=1` only when explicitly requested.
+- UI browser tests: `examples/chat-ui/e2e` — demo fixture by default (`docs/lessons/05-playwright-ui-tests.md`).

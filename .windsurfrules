@@ -1,0 +1,11 @@
+# Windsurf / Codeium
+
+Follow the repository root **AGENTS.md** for all agent coding rules (layers, tools, tests, workflows).
+
+Key constraints:
+
+- `agents/` → ToolLoopAgent only; `tools/` → `build(ctx)` + user-scoped domain; `chat/` → HTTP/stream/store
+- No global tool registry; explicit per-agent tool wiring
+- Classicist tests; mock only the LLM (`docs/testing.md`)
+- Feature checklist: `docs/lessons/02-adding-features.md`
+- Prompting guide: `docs/lessons/06-ai-assisted-development.md`

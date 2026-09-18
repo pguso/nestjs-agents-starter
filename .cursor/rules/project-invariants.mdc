@@ -1,0 +1,16 @@
+---
+description: Core NestJS agents starter invariants — always apply
+alwaysApply: true
+---
+
+# Project invariants
+
+Canonical detail: root `AGENTS.md`. Lessons: `docs/lessons/`.
+
+- **Layers:** `agents/` = ToolLoopAgent config only; `tools/` = `build(ctx)` + domain; `chat/` = HTTP/streaming/store; `model/` = provider from env. Never stream or use `@Res()` in agents/tools.
+- **No global tool registry** — wire tools explicitly per agent.
+- **Auth:** tools use `ctx.userId` from `RequestContext`; never trust model-supplied user ids.
+- **Schemas:** Zod for tools; `class-validator` + Swagger for HTTP DTOs.
+- **Tests:** Chicago/Detroit — real collaborators; mock only the LLM. See `docs/testing.md`.
+- **AI SDK 6** — do not bump major casually.
+- Before adding features, follow `docs/lessons/02-adding-features.md`. Verify with `npm run check`.

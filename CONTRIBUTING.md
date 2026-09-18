@@ -35,3 +35,7 @@ Follow the Chicago/Detroit (classicist) approach documented in [docs/testing.md]
 
 - Format with Prettier (`npm run format`).
 - Lint with oxlint (`npm run lint`).
+
+## AI coding tools
+
+If you use Cursor, Codex, Claude Code, Copilot, or Windsurf on this repo, follow [AGENTS.md](AGENTS.md) and [docs/lessons/06-ai-assisted-development.md](docs/lessons/06-ai-assisted-development.md). Keep architectural invariants in `AGENTS.md` when you change them; mirror must-not-miss rules into `.cursor/rules` and `.github/copilot-instructions.md`.

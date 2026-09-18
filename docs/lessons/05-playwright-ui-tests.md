@@ -169,5 +169,6 @@ Root convenience scripts: `npm run test:ui` / `npm run test:ui:live`. CI runs th
 ## Next
 
 - Wire a new Nest tool into cards/approvals: [Lesson 4](./04-react-frontend.md)
+- Drive changes with Cursor/Codex/etc.: [Lesson 6](./06-ai-assisted-development.md)
 - Testing pyramid and inventory: [docs/testing.md](../testing.md)
 - Sample UI README (commands + `?demo`): [`examples/chat-ui/README.md`](../../examples/chat-ui/README.md)

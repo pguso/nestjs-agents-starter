@@ -1,0 +1,33 @@
+---
+description: Patterns for Nest agents and AI SDK tools
+globs: src/agents/**/*.ts,src/tools/**/*.ts
+alwaysApply: false
+---
+
+# Agents and tools
+
+## Tools
+
+```ts
+// ✅ build per request with RequestContext
+build(ctx: RequestContext) {
+  return tool({
+    description: '...',
+    inputSchema: z.object({ orderId: z.string() }),
+    execute: ({ orderId }) => this.orders.findForUser(ctx.userId, orderId),
+  });
+}
+```
+
+- Register in `ToolsModule`; inject only into agents that should have the tool.
+- Add `*.tool.spec.ts` with a fixed `RequestContext`.
+- Do not put controllers or agent instructions in tool files.
+
+## Agents
+
+- `create(ctx)` returns `new ToolLoopAgent({ ... })` — instructions, tools map, step limit / `stopWhen`.
+- Unique `readonly id` for `agentId` on `POST /chat`.
+- Export from `AgentsModule`; `register` in `AgentRegistry` constructor.
+- No Express types, no persistence, no provider API keys in agent files.
+
+Copy `order-lookup.tool.ts` / `assistant.agent.ts` rather than inventing new shapes.
