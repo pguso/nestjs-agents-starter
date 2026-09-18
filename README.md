@@ -104,7 +104,7 @@ Before you ship:
 
 1. Set `AUTH_MODE=jwt` and `JWT_SECRET` (boot refuses `dev` / `jwt-stub` when `NODE_ENV=production`). For IdP SSO, swap HS256 for JWKS in `AuthGuard`.
 2. Set `CORS_ORIGINS` to your frontend origin(s).
-3. Swap `InMemoryConversationStore` for a durable, **user-scoped** store (see `PostgresConversationStore` skeleton).
+3. Swap `InMemoryConversationStore` for a durable, **user-scoped** store (copy `postgres-conversation.store.skeleton.ts`, implement it, then bind — do not bind the skeleton as-is).
 4. Run behind a reverse proxy configured for streaming.
 
 ## How the project is laid out
@@ -154,7 +154,7 @@ The example agent uses `ToolLoopAgent` with a step limit, so a confused model ca
 
 ## Conversations
 
-Messages are stored through a `ConversationStore` interface keyed by **`(userId, conversationId)`**. The default implementation keeps them in memory, which is fine for development and useless for anything else. Swap in your own implementation (see the `PostgresConversationStore` skeleton) by providing a different class for the same token in `ChatModule`.
+Messages are stored through a `ConversationStore` interface keyed by **`(userId, conversationId)`**. The default implementation keeps them in memory (boot warns `conversation store = in-memory (ephemeral)`), which is fine for development and useless for anything else. Swap in your own implementation by copying `postgres-conversation.store.skeleton.ts`, implementing `load`/`save`, and providing that class for the same token in `ChatModule`. `GET /conversations/:id` returns `[]` for missing or empty history for the current user — not an error, and not authorization success for another user’s id.
 
 ## Frontend
 

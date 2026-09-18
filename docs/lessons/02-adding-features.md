@@ -50,7 +50,7 @@ Swagger Try it out works well for these endpoints. See [Lesson 3](./03-swagger-o
 { provide: CONVERSATION_STORE, useClass: InMemoryConversationStore }
 ```
 
-Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(userId, conversationId)` / `save(userId, conversationId, messages)`) against Postgres, Redis, etc. Start from the [`PostgresConversationStore`](../../src/chat/postgres-conversation.store.ts) skeleton, then swap `useClass` (or `useFactory`). Controllers and agents do not change. Always key by user so history cannot leak across accounts.
+Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(userId, conversationId)` / `save(userId, conversationId, messages)`) against Postgres, Redis, etc. Start from the [`postgres-conversation.store.skeleton.ts`](../../src/chat/postgres-conversation.store.skeleton.ts) file (copy it, implement `load`/`save`, then bind — binding the skeleton as-is fails at module init). Controllers and agents do not change. Always key by user so history cannot leak across accounts. Boot logs `conversation store = in-memory (ephemeral)` while the default store is bound.
 
 ## Auth beyond the stub
 

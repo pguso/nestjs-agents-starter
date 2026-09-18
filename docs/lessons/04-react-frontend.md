@@ -203,8 +203,10 @@ const res = await fetch(
   `http://localhost:3000/conversations/${conversationId}`,
   { headers: { 'x-user-id': 'demo-user' } },
 );
-const messages = await res.json(); // UIMessage[]
+const messages = await res.json(); // UIMessage[] — empty [] means missing or empty for this user, not an error
 ```
+
+Do not treat `[]` as proof that the conversation id is valid for another user; the store only returns rows for the authenticated user.
 
 ## Auth header today vs production
 

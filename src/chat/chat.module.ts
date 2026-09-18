@@ -4,7 +4,8 @@ import { ChatController } from './chat.controller.js';
 import { ChatService } from './chat.service.js';
 import { CONVERSATION_STORE } from './conversation-store.js';
 import { InMemoryConversationStore } from './in-memory-conversation.store.js';
-// import { PostgresConversationStore } from './postgres-conversation.store.js';
+// Skeleton only — copy/implement before binding (fails at module init if bound as-is):
+// import { PostgresConversationStore } from './postgres-conversation.store.skeleton.js';
 
 @Module({
   imports: [AgentsModule],
@@ -14,7 +15,7 @@ import { InMemoryConversationStore } from './in-memory-conversation.store.js';
     {
       provide: CONVERSATION_STORE,
       useClass: InMemoryConversationStore,
-      // Swap for durable storage:
+      // Swap for durable storage after implementing a real store (not the .skeleton file):
       // useClass: PostgresConversationStore,
     },
   ],

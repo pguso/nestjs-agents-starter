@@ -62,12 +62,17 @@ export class ChatController {
   @Get('conversations/:id')
   @ApiOperation({
     summary: 'Load a stored conversation',
-    description:
-      'Returns the message list saved for `id` for the current user (from `x-user-id`), or an empty array if nothing was stored. Suitable for Swagger Try it out.',
+    description: [
+      'Returns the message list saved for `id` for the **current user** only (identity from auth, not from the path).',
+      'Empty `[]` means missing or empty for this user — not an error, and not proof the id is valid for another user.',
+      'Do not treat `[]` as authorization success against someone else’s conversation id.',
+      'Suitable for Swagger Try it out.',
+    ].join(' '),
   })
   @ApiParam({ name: 'id', example: 'conv_123' })
   @ApiOkResponse({
-    description: 'Stored AI SDK UI messages (empty array when missing).',
+    description:
+      'Stored AI SDK UI messages. Empty array = missing or empty for this user (not an error).',
     type: [UiMessageDto],
   })
   async getConversation(

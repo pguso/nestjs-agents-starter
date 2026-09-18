@@ -44,7 +44,7 @@ async function bootstrap() {
         'HTTP API for the AI agents starter template.',
         '',
         '`POST /chat` streams the AI SDK UI message protocol - use curl or a React `useChat` client, not Swagger Try it out.',
-        '`GET /conversations/:id` returns stored messages as JSON and works well from Swagger UI.',
+        '`GET /conversations/:id` returns stored messages as JSON (empty `[]` = missing or empty for this user, not an error).',
         '`GET /health` is a liveness check.',
       ].join('\n'),
     )

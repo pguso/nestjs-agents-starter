@@ -37,7 +37,7 @@ curl -N http://localhost:3000/chat \
 
 or a React `useChat` client ([Lesson 4](./04-react-frontend.md)).
 
-`GET /conversations/:id` is normal JSON - use Try it out freely (empty array if the id was never saved).
+`GET /conversations/:id` is normal JSON - use Try it out freely. Empty `[]` means missing or empty for the **current user**, not an error — and not proof another user’s conversation id exists or is authorized.
 
 ## Document a new endpoint
 

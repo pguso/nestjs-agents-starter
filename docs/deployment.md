@@ -59,7 +59,7 @@ Errors and agent logs include `requestId` (from `x-request-id` or a generated UU
 
 ## Conversations
 
-The default store is in-memory and user-scoped (`userId` + `conversationId`). For production, implement [`PostgresConversationStore`](../src/chat/postgres-conversation.store.ts) (or Redis) and swap the provider in [`ChatModule`](../src/chat/chat.module.ts).
+The default store is in-memory and user-scoped (`userId` + `conversationId`). Boot warns `conversation store = in-memory (ephemeral)`. For production, copy [`postgres-conversation.store.skeleton.ts`](../src/chat/postgres-conversation.store.skeleton.ts), implement `load`/`save`, then swap the provider in [`ChatModule`](../src/chat/chat.module.ts) (binding the skeleton as-is fails at module init).
 
 ## Streaming and reverse proxies
 
