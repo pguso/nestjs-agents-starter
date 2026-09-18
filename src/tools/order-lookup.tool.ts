@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { tool } from 'ai';
 import { z } from 'zod';
 import type { RequestContext } from '../common/request-context.js';
-import { OrdersService } from './orders.service.js';
+import { OrdersService } from '../orders/orders.service.js';
 
 @Injectable()
 export class OrderLookupTool {

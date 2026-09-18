@@ -7,7 +7,7 @@ alwaysApply: true
 
 Canonical detail: root `AGENTS.md`. Lessons: `docs/lessons/`.
 
-- **Layers:** `agents/` = ToolLoopAgent config only; `tools/` = `build(ctx)` + domain; `chat/` = HTTP/streaming/store; `model/` = provider from env. Never stream or use `@Res()` in agents/tools.
+- **Layers:** `agents/` = ToolLoopAgent config only; `tools/` = `build(ctx)` wrappers; `orders/` = sample domain; `chat/` = HTTP/streaming/store; `model/` = provider from env. Never stream or use `@Res()` in agents/tools.
 - **No global tool registry** — wire tools explicitly per agent.
 - **Auth:** tools use `ctx.userId` from `RequestContext`; never trust model-supplied user ids.
 - **Schemas:** Zod for tools; `class-validator` + Swagger for HTTP DTOs.

@@ -7,7 +7,8 @@ This template splits agent work into layers so HTTP, models, tools, and domain l
 ```
 src/
   agents/     what the agent is for (instructions, tools, step limits) + AgentRegistry
-  tools/      domain capabilities as Nest providers
+  tools/      AI SDK tool wrappers (`build(ctx)`) that call domain services
+  orders/     sample domain (`OrdersService`) — keep tools thin
   chat/       HTTP, streaming, conversation persistence
   model/      AI provider selection (openai | anthropic | ollama)
   config/     boot-time env validation
@@ -20,7 +21,8 @@ src/
 | Layer | Owns | Must not own |
 |-------|------|----------------|
 | `agents/` | Instructions, which tools an agent gets, step limits, registry ids, returning a `ToolLoopAgent` from `create()` | HTTP routes, `@Res()` / Express `Response`, persistence, provider API keys |
-| `tools/` | Domain calls scoped to the current user | Controllers, agent instructions |
+| `tools/` | AI SDK `tool()` wrappers scoped to the current user via `ctx` | Controllers, agent instructions, domain persistence |
+| `orders/` | Sample domain logic (`OrdersService`) | HTTP, agents, AI SDK tools |
 | `chat/` | Controllers, DTOs, streaming to the client, `ConversationStore` | Tool implementations, model config |
 | `model/` | Building a `LanguageModel` from env | Agents or tools |
 | `config/` | Env schema / fail-fast validation | Feature logic |
@@ -162,7 +164,7 @@ await this.conversations.save(
 
 ## Module wiring
 
-[`AppModule`](../../src/app.module.ts) boots the app. Feature modules declare the real edges: `ChatModule` imports `AgentsModule`; `AgentsModule` imports `ModelModule` and `ToolsModule`. Tools are injected into agents - not into the controller.
+[`AppModule`](../../src/app.module.ts) boots the app. Feature modules declare the real edges: `ChatModule` imports `AgentsModule`; `AgentsModule` imports `ModelModule` and `ToolsModule`; `ToolsModule` imports `OrdersModule`. Tools are injected into agents - not into the controller.
 
 ```mermaid
 flowchart TB
@@ -173,7 +175,8 @@ flowchart TB
   Common["CommonModule<br/>(AuthGuard, RequestContext)"]
   Health["HealthModule"]
   Model["ModelModule<br/>(LanguageModel)"]
-  Tools["ToolsModule<br/>(OrdersService, tools)"]
+  Orders["OrdersModule<br/>(OrdersService)"]
+  Tools["ToolsModule<br/>(order tools)"]
   Agents["AgentsModule<br/>(AssistantAgent, AgentRegistry)"]
   Chat["ChatModule<br/>(ChatController, ConversationStore)"]
 
@@ -189,6 +192,7 @@ flowchart TB
   Chat -->|imports| Agents
   Agents -->|imports| Model
   Agents -->|imports| Tools
+  Tools -->|imports| Orders
 ```
 
 ## Takeaway
@@ -197,7 +201,8 @@ flowchart TB
 |------------------|---------------|
 | `chat/` | HTTP: routes, DTOs, streaming, persistence |
 | `agents/` | Intelligence: instructions, tool wiring, step limits |
-| `tools/` | Domain side effects: orders, lookups, mutations |
+| `tools/` | AI SDK tool wrappers that call domain services |
+| `orders/` | Domain: orders lookups and mutations |
 | `common/` | Identity: `RequestContext`, auth, shared guards/filters |
 
 If a change fits more than one row, split it - do not stretch a layer past its ownership.

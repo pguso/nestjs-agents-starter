@@ -8,10 +8,11 @@ Before changing architecture or adding a feature, read [docs/lessons/01-project-
 
 1. **Layer boundaries**
    - `agents/` - instructions, tool wiring, step limits; return `ToolLoopAgent` from `create(ctx)`. No Express, no `@Res()`, no streaming, no persistence.
-   - `tools/` - Nest providers with `build(ctx: RequestContext)` returning an AI SDK `tool()`. Scope every domain call with `ctx.userId`.
-   - `chat/` - HTTP, UI message streaming, conversation store. Owns controllers and `@Res()`.
-   - `model/` - provider selection from env only.
-   - `common/` - `RequestContext`, auth guard, filters - not feature logic.
+ - `tools/` - Nest providers with `build(ctx: RequestContext)` returning an AI SDK `tool()`. Scope every domain call with `ctx.userId`.
+ - `orders/` - sample domain (`OrdersService`); tools stay thin wrappers over it.
+ - `chat/` - HTTP, UI message streaming, conversation store. Owns controllers and `@Res()`.
+ - `model/` - provider selection from env only.
+ - `common/` - `RequestContext`, auth guard, filters - not feature logic.
 
 2. **No global tool registry.** Agents only get tools you pass explicitly in that agent’s `create()`.
 

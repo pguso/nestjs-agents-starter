@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CancelOrderTool } from './cancel-order.tool.js';
-import { OrdersService } from './orders.service.js';
+import { OrdersService } from '../orders/orders.service.js';
 
 describe('CancelOrderTool', () => {
   it('declares needsApproval so execute does not run until approved', () => {

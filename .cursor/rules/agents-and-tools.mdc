@@ -1,6 +1,6 @@
 ---
 description: Patterns for Nest agents and AI SDK tools
-globs: src/agents/**/*.ts,src/tools/**/*.ts
+globs: src/agents/**/*.ts,src/tools/**/*.ts,src/orders/**/*.ts
 alwaysApply: false
 ---
 

@@ -112,7 +112,8 @@ Before you ship:
 ```
 src/
   agents/        agent definitions + AgentRegistry
-  tools/         tools as injectable providers
+  tools/         AI SDK tool wrappers as injectable providers
+  orders/        sample domain (`OrdersService`)
   chat/          streaming controller and conversation storage
   model/         provider setup, reads AI_PROVIDER and AI_MODEL
   config/        boot-time env validation
@@ -121,7 +122,7 @@ src/
   app.module.ts
 ```
 
-The split is deliberate. An agent file says what the agent is for, which model it uses and which tools it gets, then returns a `ToolLoopAgent` - nothing more. It never sees Express or `@Res()`. The chat module owns HTTP streaming and persistence but not what any particular agent does. Tools know about your domain and nothing else. When something breaks, it's usually obvious which of the three to look at.
+The split is deliberate. An agent file says what the agent is for, which model it uses and which tools it gets, then returns a `ToolLoopAgent` - nothing more. It never sees Express or `@Res()`. The chat module owns HTTP streaming and persistence but not what any particular agent does. Tools stay thin wrappers over domain services (e.g. `orders/`). When something breaks, it's usually obvious which folder to look at.
 
 ## Writing a tool
 

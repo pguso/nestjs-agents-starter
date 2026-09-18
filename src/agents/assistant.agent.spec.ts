@@ -3,7 +3,7 @@ import { AssistantAgent } from './assistant.agent.js';
 import { CancelOrderTool } from '../tools/cancel-order.tool.js';
 import { OrderLookupTool } from '../tools/order-lookup.tool.js';
 import { ListOrdersTool } from '../tools/list-orders.tool.js';
-import { OrdersService } from '../tools/orders.service.js';
+import { OrdersService } from '../orders/orders.service.js';
 import type { ModelService } from '../model/model.service.js';
 import {
   createScriptedModel,

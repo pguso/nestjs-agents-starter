@@ -92,7 +92,7 @@ How to write and extend browser tests: [Lesson 5 - Browser tests with Playwright
 
 ### 1. Domain - `OrdersService`
 
-Target: `src/tools/orders.service.spec.ts`
+Target: `src/orders/orders.service.spec.ts`
 
 - [x] `findForUser` returns the owned order for `demo-user` / `ord_1001`
 - [x] Unknown id -> `NotFoundException` with a stable message shape

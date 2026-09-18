@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OrdersService } from './orders.service.js';
+import { OrdersService } from '../orders/orders.service.js';
 import { ListOrdersTool } from './list-orders.tool.js';
 
 describe('ListOrdersTool', () => {
