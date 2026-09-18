@@ -2,7 +2,7 @@
 
 A NestJS template for building agent features into a real backend, using the [AI SDK](https://ai-sdk.dev).
 
-This is a normal Nest backend with agents inside it. Auth, services, and tests stay where they already are. The AI SDK is the model and agent layer providers, tools, streaming, UI protocol, the whole loop so you are not wiring up another product on the side just to run agents (LangGraph and similar).
+This is a normal Nest backend with agents inside it. Auth, services, and tests stay where they already are. The AI SDK is the model and agent layer (providers, tools, streaming, UI protocol, the whole loop) so you are not wiring up another product on the side just to run agents (LangGraph and similar).
 
 Most AI SDK examples assume Next.js and a single route handler. That works for a demo, but it gets awkward once agents need your existing services, your auth, your database and your tests. This template is how I'd set up a NestJS project for that: agents and tools are regular Nest providers, every tool call knows which user it runs for, and responses stream to the client in the format the AI SDK UI hooks expect.
 
