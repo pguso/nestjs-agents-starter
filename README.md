@@ -78,6 +78,7 @@ Compose defaults to `AI_PROVIDER=ollama`. Override with a `.env` file if you pre
 | 2 | [Adding features](docs/lessons/02-adding-features.md) | Tools, agents, HTTP endpoints, stores |
 | 3 | [Swagger / OpenAPI](docs/lessons/03-swagger-openapi.md) | Documenting the API, streaming limits |
 | 4 | [React frontend](docs/lessons/04-react-frontend.md) | `useChat` wiring, tool cards / approvals, extending for new tools |
+| 5 | [Browser tests with Playwright](docs/lessons/05-playwright-ui-tests.md) | Demo vs live UI e2e, writing Playwright tests |
 
 Full index: [docs/lessons](docs/lessons). Also see [deployment](docs/deployment.md).
 
@@ -104,7 +105,7 @@ src/
   app.module.ts
 ```
 
-The split is deliberate. An agent file says what the agent is for, which model it uses and which tools it gets. It does not know about HTTP. The chat module knows about HTTP and persistence but not about what any particular agent does. Tools know about your domain and nothing else. When something breaks, it's usually obvious which of the three to look at.
+The split is deliberate. An agent file says what the agent is for, which model it uses and which tools it gets, then returns a `ToolLoopAgent` - nothing more. It never sees Express or `@Res()`. The chat module owns HTTP streaming and persistence but not what any particular agent does. Tools know about your domain and nothing else. When something breaks, it's usually obvious which of the three to look at.
 
 ## Writing a tool
 
@@ -154,13 +155,16 @@ The `/chat` endpoint speaks the AI SDK UI message stream protocol. [Lesson 4](do
 ```bash
 npm test
 npm run test:e2e
+npm run test:ui
 # optional live provider smoke (needs real keys / Ollama):
 LIVE_LLM_TEST=1 npm run test:live
+# optional live chat-ui smoke (Nest on :3000 + provider keys / Ollama):
+LIVE_LLM_TEST=1 npm run test:ui:live
 ```
 
 Or `npm run check` for lint + format check + unit + e2e + build.
 
-Tests follow the Chicago/Detroit (classicist) school: real collaborators, doubles only at the LLM boundary, and assertions on observable outcomes (tool results, store contents, HTTP)-not model wording or internal spies. See [docs/testing.md](docs/testing.md) for principles, the behavior inventory, and how to mock the model in agent and e2e specs.
+Tests follow the Chicago/Detroit (classicist) school: real collaborators, doubles only at the LLM boundary, and assertions on observable outcomes (tool results, store contents, HTTP)-not model wording or internal spies. See [docs/testing.md](docs/testing.md) for principles, the behavior inventory, and how to mock the model in agent and e2e specs. Sample UI browser tests live under [`examples/chat-ui/e2e`](examples/chat-ui/e2e) (demo fixture in CI; live LLM opt-in) - [Lesson 5](docs/lessons/05-playwright-ui-tests.md) explains how to write them.
 
 ## Versions
 

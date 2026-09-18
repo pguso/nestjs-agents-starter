@@ -36,7 +36,12 @@ Doubling the LLM is Detroit, not London: the model is the *external* system. Kee
 ```
         ┌─────────────────┐
         │  Live provider  │  optional, never default CI
-        │  contract tests │
+        │  / live UI      │
+        └────────┬────────┘
+                 │
+        ┌────────▼────────┐
+        │  Browser e2e    │  demo fixture (`?demo`); Playwright
+        │  (chat-ui)      │
         └────────┬────────┘
                  │
         ┌────────▼────────┐
@@ -50,7 +55,7 @@ Doubling the LLM is Detroit, not London: the model is the *external* system. Kee
         └─────────────────┘
 ```
 
-Most coverage lives in sociable Vitest specs under `src/**/*.spec.ts`. Fewer e2e specs under `test/**/*.e2e-spec.ts` exercise HTTP with a mocked model. Live-provider contract tests are out of scope for the default suite.
+Most coverage lives in sociable Vitest specs under `src/**/*.spec.ts`. Fewer e2e specs under `test/**/*.e2e-spec.ts` exercise HTTP with a mocked model. Playwright covers the sample chat UI under `examples/chat-ui/e2e` via a static `?demo` fixture (no Nest, no LLM). Live-provider contract tests and live UI smokes are out of scope for the default suite.
 
 ## How to double the LLM
 
@@ -78,7 +83,10 @@ npm test          # vitest run - src/**/*.spec.ts
 npm run test:watch
 npm run test:cov  # coverage via @vitest/coverage-v8
 npm run test:e2e  # vitest run --config ./vitest.config.e2e.ts
+npm run test:ui   # Playwright demo-mode e2e for examples/chat-ui
 ```
+
+How to write and extend browser tests: [Lesson 5 - Browser tests with Playwright](./lessons/05-playwright-ui-tests.md).
 
 ## Behavior inventory
 
@@ -154,6 +162,19 @@ Override `ModelService.getModel()` with a scripted mock model.
 - [x] `POST /chat` + `conversationId` → subsequent `GET /conversations/:id` returns saved messages
 - [x] `x-user-id: other-user` + mock tool-call for `ord_1001` → no demo-user order leakage
 
+### 8. Browser e2e - sample chat UI
+
+Target: `examples/chat-ui/e2e/demo.spec.ts` (Playwright, Chromium). Uses `/?demo` static fixture - no Nest, no LLM.
+
+- [x] `/` empty state shows Shopping assistant + suggestion chips
+- [x] `/?demo` shows listOrders / cancelOrder cards and Approval required
+- [x] Pending approval disables the composer
+- [x] Approve / Reject clear the approval card and unblock the composer
+- [x] Theme toggle flips `document.documentElement.dataset.theme`
+- [x] New chat clears the thread back to empty state
+
+Optional: `examples/chat-ui/e2e/live.spec.ts` with `LIVE_LLM_TEST=1` (Nest on `:3000`).
+
 ## When to add a double
 
 Add a test double when the dependency is:
@@ -180,5 +201,6 @@ New tools and agents land with Detroit-style behavior tests before merge:
 ## Out of scope (for now)
 
 - Live OpenAI / Anthropic / Ollama contract tests in default CI
+- Live chat-ui Playwright smokes in default CI (`LIVE_LLM_TEST=1 npm run test:ui:live`)
 - Enforced coverage thresholds
 - Property-based testing

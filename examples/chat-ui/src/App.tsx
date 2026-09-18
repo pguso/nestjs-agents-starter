@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import {
   DefaultChatTransport,
   lastAssistantMessageIsCompleteWithApprovalResponses,
 } from 'ai';
+import type { RespondToApproval } from './components/approval-card';
 import { Composer } from './components/composer';
 import { EmptyState } from './components/empty-state';
 import {
@@ -16,6 +17,11 @@ import {
   SunIcon,
 } from './components/icons';
 import { MessageTurn } from './components/message-turn';
+import {
+  applyDemoApproval,
+  DEMO_MESSAGES,
+  isDemoMode,
+} from './lib/demo-fixture';
 import { useAutoScroll, useTheme } from './lib/hooks';
 import { hasPendingApproval } from './lib/parts';
 
@@ -29,6 +35,7 @@ function newConversationId() {
 export function App() {
   const [input, setInput] = useState('');
   const { theme, toggleTheme } = useTheme();
+  const demo = useMemo(() => isDemoMode(), []);
 
   // The server persists per (userId, conversationId); a new chat needs a new id.
   const [conversationId, setConversationId] = useState(newConversationId);
@@ -59,20 +66,37 @@ export function App() {
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
   });
 
+  useEffect(() => {
+    if (demo) {
+      setMessages(DEMO_MESSAGES);
+    }
+  }, [demo, setMessages]);
+
   const busy = status === 'submitted' || status === 'streaming';
   const awaitingApproval = hasPendingApproval(messages);
   const { ref: threadRef, onScroll } = useAutoScroll(messages);
 
+  const respondToApproval: RespondToApproval = useCallback(
+    (response) => {
+      if (demo) {
+        setMessages((current) => applyDemoApproval(current, response));
+        return;
+      }
+      return addToolApprovalResponse(response);
+    },
+    [addToolApprovalResponse, demo, setMessages],
+  );
+
   const send = useCallback(
     (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed || busy) {
+      if (!trimmed || busy || demo) {
         return;
       }
       setInput('');
       void sendMessage({ text: trimmed });
     },
-    [busy, sendMessage],
+    [busy, demo, sendMessage],
   );
 
   function startNewChat() {
@@ -140,7 +164,7 @@ export function App() {
               <MessageTurn
                 key={message.id}
                 message={message}
-                respond={addToolApprovalResponse}
+                respond={respondToApproval}
               />
             ))}
             {showTyping ? (

@@ -32,7 +32,37 @@ VITE_API_BASE=http://localhost:3000
 VITE_USER_ID=demo-user
 ```
 
-`?demo` on the URL loads a static fixture (orders + pending cancel approval) without calling the API - handy for CSS work.
+`?demo` on the URL loads a static fixture (completed `listOrders` card + pending
+`cancelOrder` approval) without calling the API - handy for CSS work and for
+deterministic Playwright tests. Approve / Reject update local message state only.
+
+## Playwright
+
+From the repo root (or from this directory):
+
+```bash
+npm run test:ui
+# or: cd examples/chat-ui && npm run test:e2e
+```
+
+That builds the UI, serves `vite preview`, and runs Chromium against `/` and
+`/?demo`. No Nest server or LLM is required.
+
+Optional live UI smoke (Nest must already be running on `:3000` with a real
+provider or Ollama, and `CORS_ORIGINS` allowing `http://127.0.0.1:5173`):
+
+```bash
+# terminal 1
+npm run start:dev
+# terminal 2
+LIVE_LLM_TEST=1 npm run test:ui:live
+```
+
+Live tests assert structure only (an assistant turn appears, no error banner) -
+not model wording.
+
+Walkthrough (when to use Playwright, how to add a test):
+[Lesson 5](../../docs/lessons/05-playwright-ui-tests.md).
 
 ## Design choices
 
@@ -91,10 +121,14 @@ Keep presentation in components; keep `parts.ts` as a thin adapter.
 
 ```
 src/
-  App.tsx              transport, useChat wiring, app shell
+  App.tsx              transport, useChat wiring, app shell, ?demo loader
   components/          composer, message turn, tool card, approval card, empty state
   lib/parts.ts         UIMessage parts -> what the UI renders
+  lib/demo-fixture.ts  static messages for ?demo
   lib/markdown.tsx     tiny markdown renderer for assistant text
   lib/hooks.ts         theme + auto-scroll
   styles.css           design tokens and all component styles
+e2e/
+  demo.spec.ts         Playwright demo-mode suite (CI)
+  live.spec.ts         optional LIVE_LLM_TEST=1 smoke
 ```

@@ -233,8 +233,9 @@ Useful for typed REST clients (`GET /conversations/:id`). Not useful as the prim
 4. Unknown tools → JSON card; known shapes or names → dedicated UI.
 5. If a write tool needs approval → `needsApproval` on Nest + Approve/Reject + `addToolApprovalResponse`.
 6. Update empty-state suggestions when you add user-facing tools.
-7. Tighten CORS, auth, and body limits before deploying.
+7. Cover the visible path with a Playwright demo test ([Lesson 5](./05-playwright-ui-tests.md)).
+8. Tighten CORS, auth, and body limits before deploying.
 
 ## Takeaway
 
-Streaming chat through the AI SDK, REST through ordinary HTTP, identity through headers that populate `RequestContext`, and destructive tools behind human approval. The sample UI is a **parts → components** map: change Nest contracts first, then decide whether JSON fallback, a custom card, or an approval flow is enough.
+Streaming chat through the AI SDK, REST through ordinary HTTP, identity through headers that populate `RequestContext`, and destructive tools behind human approval. The sample UI is a **parts → components** map: change Nest contracts first, then decide whether JSON fallback, a custom card, or an approval flow is enough. Lock the UI with [Playwright demo tests](./05-playwright-ui-tests.md) so approvals and cards stay green without a live model.
