@@ -33,7 +33,8 @@ Copy [`.env.example`](../.env.example). Boot fails fast if the selected provider
 | `AI_PROVIDER` / `AI_MODEL` | `openai`, `anthropic`, or `ollama` |
 | `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Required for the matching provider |
 | `OLLAMA_BASE_URL` | OpenAI-compatible base URL (compose uses `http://ollama:11434/v1`) |
-| `AUTH_MODE` | `dev` (spoofable `x-user-id`) or `jwt` (Bearer stub - replace before real prod) |
+| `AUTH_MODE` | `dev` (spoofable `x-user-id`), `jwt-stub` (unsigned Bearer `sub`), or `jwt` (HS256 via `JWT_SECRET`). Boot fails for `dev` / `jwt-stub` when `NODE_ENV=production`. |
+| `JWT_SECRET` | Required when `AUTH_MODE=jwt`. Optional `JWT_ISSUER` / `JWT_AUDIENCE`. For IdP SSO, swap the guard to JWKS later. |
 | `CORS_ORIGINS` | Comma-separated origins. Unset allows all in non-production; production requires an explicit list (or CORS stays locked) |
 | `BODY_SIZE_LIMIT` | JSON/urlencoded limit (default `256kb`) |
 | `THROTTLE_TTL_MS` / `THROTTLE_LIMIT` | Global rate limit; `POST /chat` uses a tighter 20/min override |
@@ -44,7 +45,7 @@ Copy [`.env.example`](../.env.example). Boot fails fast if the selected provider
 
 Before exposing the API:
 
-1. Set `AUTH_MODE=jwt` and **replace** [`AuthGuard`](../src/common/auth.guard.ts) with real JWT/JWKS or session validation. The starter JWT path only reads an unsigned `sub` claim.
+1. Set `AUTH_MODE=jwt` and `JWT_SECRET` (required when `NODE_ENV=production`). Optionally set `JWT_ISSUER` / `JWT_AUDIENCE`. For Auth0/Clerk/Cognito, replace HS256 with JWKS in [`AuthGuard`](../src/common/auth.guard.ts) — still populate `RequestContext` the same way.
 2. Set `CORS_ORIGINS` to your frontend origin(s).
 3. Keep populating `RequestContext` the same way so tools stay user-scoped.
 

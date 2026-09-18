@@ -65,17 +65,14 @@ sequenceDiagram
 [`AuthGuard`](../../src/common/auth.guard.ts) runs before the controller. In `AUTH_MODE=dev` it reads `x-user-id` (default `demo-user`), builds a [`RequestContext`](../../src/common/request-context.ts), and hangs it on the request so later layers can inject it with `@CurrentContext()`.
 
 ```ts
-const ctx: RequestContext = {
-  requestId,
-  userId:
-    mode === 'jwt'
-      ? this.userIdFromBearer(request)
-      : this.userIdFromDevHeader(request),
-};
+const userId =
+  mode === 'jwt'
+    ? await this.userIdFromVerifiedJwt(request)
+    : mode === 'jwt-stub'
+      ? this.userIdFromUnsignedJwt(request)
+      : this.userIdFromDevHeader(request);
 
-(request as Request & { [REQUEST_CONTEXT_KEY]: RequestContext })[
-  REQUEST_CONTEXT_KEY
-] = ctx;
+const ctx: RequestContext = { requestId, userId };
 ```
 
 ### 2. Controller: validate body, abort on disconnect

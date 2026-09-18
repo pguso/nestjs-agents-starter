@@ -11,7 +11,7 @@ Already configured in [`main.ts`](../../src/main.ts):
 - CORS via `CORS_ORIGINS` (comma-separated). Unset allows all origins in non-production; set `http://localhost:5173` when using the sample UI with a locked-down CORS list.
 - Helmet + body size limits (`BODY_SIZE_LIMIT`, default `256kb`).
 - Swagger at `/docs` for humans exploring REST.
-- Global auth: `AUTH_MODE=dev` uses `x-user-id` (default `demo-user`); `AUTH_MODE=jwt` expects a Bearer token (see [`AuthGuard`](../../src/common/auth.guard.ts)).
+- Global auth: `AUTH_MODE=dev` uses `x-user-id` (default `demo-user`); `jwt` / `jwt-stub` expect Bearer tokens (see [`AuthGuard`](../../src/common/auth.guard.ts)).
 - Rate limiting via `@nestjs/throttler` (`POST /chat` is capped at 20/min).
 
 ## Sample app (recommended)
@@ -211,7 +211,7 @@ const messages = await res.json(); // UIMessage[]
 | Environment | Client sends | Nest does |
 |-------------|--------------|-----------|
 | Dev (this template) | Optional `x-user-id` | Defaults to `demo-user` |
-| Production | `Authorization: Bearer …` (or cookies) | Replace `AuthGuard`; still set `RequestContext` |
+| Production | `Authorization: Bearer …` (signed JWT) or cookies | `AUTH_MODE=jwt` + `JWT_SECRET`, or JWKS in `AuthGuard`; still set `RequestContext` |
 
 The sample only wires `x-user-id` via `VITE_USER_ID`. For JWT, change the transport `headers` (and drop the spoofable header).
 

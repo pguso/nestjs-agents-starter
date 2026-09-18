@@ -56,13 +56,14 @@ Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(use
 
 [`AuthGuard`](../../src/common/auth.guard.ts) supports:
 
-- `AUTH_MODE=dev` (default): spoofable `x-user-id`
-- `AUTH_MODE=jwt`: requires Bearer token; starter reads an **unsigned** `sub` claim
+- `AUTH_MODE=dev` (default): spoofable `x-user-id` (local only; boot warns)
+- `AUTH_MODE=jwt-stub`: unsigned Bearer `sub` (local/demo only; boot warns)
+- `AUTH_MODE=jwt`: verified HS256 Bearer via `JWT_SECRET` (optional `JWT_ISSUER` / `JWT_AUDIENCE`)
 
 To go to production:
 
-1. Set `AUTH_MODE=jwt` and replace the guard with real JWT/JWKS or session validation.
-2. Still populate `RequestContext` the same way (`userId`, later roles, tenant, …).
+1. Set `AUTH_MODE=jwt` and `JWT_SECRET`. Boot refuses `dev` and `jwt-stub` when `NODE_ENV=production`.
+2. For Auth0/Clerk/Cognito, swap HS256 for JWKS in the guard — still populate `RequestContext` the same way (`userId`, later roles, tenant, …).
 3. Keep tools reading only from `ctx` - not from raw headers inside tool code.
 4. Set `CORS_ORIGINS` and update the Swagger security scheme in [`main.ts`](../../src/main.ts) to match.
 5. See [Deployment](../deployment.md).

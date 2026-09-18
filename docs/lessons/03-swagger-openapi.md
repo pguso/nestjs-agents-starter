@@ -11,7 +11,7 @@ OpenAPI documents the **HTTP** surface of this app so humans and REST clients ca
 | CLI plugin | [`nest-cli.json`](../../nest-cli.json) - infers DTO metadata, shims `class-validator` |
 | Route annotations | [`chat.controller.ts`](../../src/chat/chat.controller.ts) |
 | Body / response schemas | [`chat.dto.ts`](../../src/chat/chat.dto.ts) |
-| Auth scheme | API key security named `x-user-id` (header), matching [`AuthGuard`](../../src/common/auth.guard.ts) |
+| Auth scheme | Starter stubs in [`main.ts`](../../src/main.ts): `x-user-id` (AUTH_MODE=dev) and Bearer (`jwt` / `jwt-stub`) — descriptions lead with “Starter stub” |
 
 After `npm run start:dev`:
 

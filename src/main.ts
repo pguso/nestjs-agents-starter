@@ -55,7 +55,7 @@ async function bootstrap() {
         in: 'header',
         name: 'x-user-id',
         description:
-          'Dev identity stub (AUTH_MODE=dev). Defaults to `demo-user` when omitted. Use Bearer JWT when AUTH_MODE=jwt.',
+          'Starter stub — AUTH_MODE=dev only (spoofable). Defaults to `demo-user` when omitted. Prefer Bearer for AUTH_MODE=jwt or jwt-stub.',
       },
       'x-user-id',
     )
@@ -65,7 +65,7 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
         description:
-          'Required when AUTH_MODE=jwt. Starter accepts an unsigned JWT with a string `sub` claim - replace AuthGuard before production.',
+          'Starter stub — AUTH_MODE=jwt verifies HS256 with JWT_SECRET; AUTH_MODE=jwt-stub is unsigned (local only). Not a full IdP integration.',
       },
       'bearer',
     )
