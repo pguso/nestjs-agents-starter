@@ -70,6 +70,17 @@ Compose defaults to `AI_PROVIDER=ollama`. Override with a `.env` file if you pre
 | Empty or truncated stream behind nginx | Disable proxy buffering; see [docs/deployment.md](docs/deployment.md) |
 | `401` with `AUTH_MODE=jwt` | Send `Authorization: Bearer …` with a payload that includes `sub` (starter stub), or switch back to `AUTH_MODE=dev` |
 
+## Lessons
+
+| # | Lesson | Covers |
+|---|--------|--------|
+| 1 | [Project structure](docs/lessons/01-project-structure.md) | Layers, ownership, request path |
+| 2 | [Adding features](docs/lessons/02-adding-features.md) | Tools, agents, HTTP endpoints, stores |
+| 3 | [Swagger / OpenAPI](docs/lessons/03-swagger-openapi.md) | Documenting the API, streaming limits |
+| 4 | [React frontend](docs/lessons/04-react-frontend.md) | `useChat` wiring, tool cards / approvals, extending for new tools |
+
+Full index: [docs/lessons](docs/lessons). Also see [deployment](docs/deployment.md).
+
 ## Production checklist
 
 Before you ship:
