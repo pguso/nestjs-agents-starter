@@ -28,7 +28,7 @@ If the tool is user-facing, update the sample UI (or your own client) next: at m
 5. Inject it into [`AgentRegistry`](../../src/agents/agent.registry.ts) and call `register(...)` in the constructor (same place `AssistantAgent` is registered).
 6. Call `POST /chat` with `"agentId": "your-id"` (omit to use the default `assistant`).
 
-Keep the agent file limited to `create(ctx)` → `new ToolLoopAgent({ ... })`. Do not import Express types, inject `@Res()`, or write to `Response` - streaming stays in [`ChatController`](../../src/chat/chat.controller.ts) / [`ChatService`](../../src/chat/chat.service.ts).
+Keep the agent file limited to `create(ctx)` -> `new ToolLoopAgent({ ... })`. Do not import Express types, inject `@Res()`, or write to `Response` - streaming stays in [`ChatController`](../../src/chat/chat.controller.ts) / [`ChatService`](../../src/chat/chat.service.ts).
 
 ## Add a REST endpoint
 

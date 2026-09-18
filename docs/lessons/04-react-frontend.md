@@ -36,7 +36,7 @@ Add `?demo` to the URL to load a static fixture (orders + pending `cancelOrder` 
 |--------|--------|
 | Chat is a **parts renderer**, not a custom SSE parser | Nest already streams the AI SDK UI message protocol; `useChat` owns reconnect, stop, and approvals |
 | **Tool calls are cards**, not JSON in the bubble | Users need state (`running` / `done` / `needs approval`) and scannable results; raw dumps hide that |
-| **Dedicated renderers when shape is known** | Order tools return `{ id, status, totalCents }` → row UI; everything else falls back to JSON so new tools still work |
+| **Dedicated renderers when shape is known** | Order tools return `{ id, status, totalCents }` -> row UI; everything else falls back to JSON so new tools still work |
 | **Approval is a separate card** below the tool | Destructive tools declare `needsApproval` on Nest; the UI reacts to part **state**, not a special endpoint |
 | **Composer blocks during approval** | Stops the user from sending a competing message while the agent is waiting on Approve/Reject |
 | **Empty-state suggestions** | Teach the three tools without reading Nest code first |
@@ -61,14 +61,14 @@ cancelOrder + needsApproval       tool-* + approval-requested    ToolCallCard + 
 examples/chat-ui/src/
   App.tsx                 shell: transport, useChat, conversationId, status, errors
   components/
-    empty-state.tsx       first screen + suggestion chips → send()
+    empty-state.tsx       first screen + suggestion chips -> send()
     message-turn.tsx      one user/assistant turn; routes blocks to bubble / tool / approval
     tool-call-card.tsx    collapsible tool card, state chips, order rows or JSON
-    approval-card.tsx     Approve / Reject → addToolApprovalResponse
+    approval-card.tsx     Approve / Reject -> addToolApprovalResponse
     composer.tsx          textarea, Enter send, Stop while streaming, blocked while approval
     icons.tsx             inline SVGs
   lib/
-    parts.ts              UIMessage.parts → MessageBlock / ToolCall (the adapter)
+    parts.ts              UIMessage.parts -> MessageBlock / ToolCall (the adapter)
     markdown.tsx          small markdown subset for assistant text
     hooks.ts              theme + auto-scroll (pauses when user scrolls up)
   styles.css              design tokens (--bg, --surface, --accent, chip tones, …)
@@ -78,19 +78,19 @@ examples/chat-ui/src/
 
 Owns everything that is **session-scoped**:
 
-- `DefaultChatTransport` → `POST ${VITE_API_BASE}/chat` with `x-user-id` and `body: { conversationId }`
+- `DefaultChatTransport` -> `POST ${VITE_API_BASE}/chat` with `x-user-id` and `body: { conversationId }`
 - `useChat` with `sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses` so approving a tool continues the turn without a second Send
 - Status pill (`Connected` / `Thinking` / `Streaming` / `Waiting for you`)
 - Error banner + Retry (`regenerate`) / dismiss
-- New chat → new `conversationId`, clear messages (server history for the old id is left alone)
+- New chat -> new `conversationId`, clear messages (server history for the old id is left alone)
 
 ### Message turn
 
 `MessageTurn` does not talk to Nest. It calls `messageBlocks(message)` and switches:
 
-1. **text** → bubble + `Markdown`
-2. **reasoning** → `<details>` card (same chrome as tools, different label)
-3. **tool** → `ToolCallCard`, and if `call.approvalId` is set → `ApprovalCard`
+1. **text** -> bubble + `Markdown`
+2. **reasoning** -> `<details>` card (same chrome as tools, different label)
+3. **tool** -> `ToolCallCard`, and if `call.approvalId` is set -> `ApprovalCard`
 
 Consecutive text parts from multi-step runs are merged into one bubble in `parts.ts`.
 
@@ -219,7 +219,7 @@ The sample only wires `x-user-id` via `VITE_USER_ID`. For JWT, change the transp
 
 Tokens live at the top of [`styles.css`](../../examples/chat-ui/src/styles.css): `--bg`, `--panel`, `--surface`, `--text`, `--accent`, status tones (`--ok` / `--warn` / `--bad`). Components use classes (`bubble`, `tool-card`, `approval`, `composer`), not inline colors.
 
-Keep structure (turn → body → bubble | tool-block); swap tokens and radii if you brand the demo. Chip `data-tone` values (`ok`, `warn`, `bad`, `running`, `neutral`) drive status color - reuse them for any new status UI.
+Keep structure (turn -> body -> bubble | tool-block); swap tokens and radii if you brand the demo. Chip `data-tone` values (`ok`, `warn`, `bad`, `running`, `neutral`) drive status color - reuse them for any new status UI.
 
 ## When to use OpenAPI codegen
 
@@ -228,14 +228,14 @@ Useful for typed REST clients (`GET /conversations/:id`). Not useful as the prim
 ## Checklist
 
 1. Decide stream vs JSON.
-2. If stream → AI SDK hook + transport + identity header (+ optional `conversationId` / `agentId`).
+2. If stream -> AI SDK hook + transport + identity header (+ optional `conversationId` / `agentId`).
 3. Render `message.parts` via an adapter; never parse the raw stream in components.
-4. Unknown tools → JSON card; known shapes or names → dedicated UI.
-5. If a write tool needs approval → `needsApproval` on Nest + Approve/Reject + `addToolApprovalResponse`.
+4. Unknown tools -> JSON card; known shapes or names -> dedicated UI.
+5. If a write tool needs approval -> `needsApproval` on Nest + Approve/Reject + `addToolApprovalResponse`.
 6. Update empty-state suggestions when you add user-facing tools.
 7. Cover the visible path with a Playwright demo test ([Lesson 5](./05-playwright-ui-tests.md)).
 8. Tighten CORS, auth, and body limits before deploying.
 
 ## Takeaway
 
-Streaming chat through the AI SDK, REST through ordinary HTTP, identity through headers that populate `RequestContext`, and destructive tools behind human approval. The sample UI is a **parts → components** map: change Nest contracts first, then decide whether JSON fallback, a custom card, or an approval flow is enough. Lock the UI with [Playwright demo tests](./05-playwright-ui-tests.md) so approvals and cards stay green without a live model.
+Streaming chat through the AI SDK, REST through ordinary HTTP, identity through headers that populate `RequestContext`, and destructive tools behind human approval. The sample UI is a **parts -> components** map: change Nest contracts first, then decide whether JSON fallback, a custom card, or an approval flow is enough. Lock the UI with [Playwright demo tests](./05-playwright-ui-tests.md) so approvals and cards stay green without a live model.

@@ -10,7 +10,7 @@ This project follows the **Chicago / Detroit / classicist** approach to automate
 | Isolation = **tests don’t share state** | Fresh Nest modules / fresh service instances per test; no cross-test `Map` residue |
 | Doubles only at **external / shared** boundaries | Double the **LLM** (`MockLanguageModelV3`); keep real `OrdersService`, tools, in-memory store |
 | Prefer **state verification** | Assert returned orders, store contents, HTTP status/body, stream outcome-not `toHaveBeenCalledWith` on internal methods |
-| Bottom-up | Domain → tools → agent (with mock model) → chat persistence → HTTP e2e |
+| Bottom-up | Domain -> tools -> agent (with mock model) -> chat persistence -> HTTP e2e |
 | Refactor resilience | Don’t couple tests to private wiring or spy call graphs |
 
 ### Anti-patterns
@@ -95,8 +95,8 @@ How to write and extend browser tests: [Lesson 5 - Browser tests with Playwright
 Target: `src/tools/orders.service.spec.ts`
 
 - [x] `findForUser` returns the owned order for `demo-user` / `ord_1001`
-- [x] Unknown id → `NotFoundException` with a stable message shape
-- [x] Other user’s id (`ord_2001`) → `NotFoundException` (no leak)
+- [x] Unknown id -> `NotFoundException` with a stable message shape
+- [x] Other user’s id (`ord_2001`) -> `NotFoundException` (no leak)
 - [x] `listForUser` returns only that user’s rows
 - [x] Fresh service instance per test (seed data is constructor-local)
 
@@ -117,9 +117,9 @@ Target: `src/agents/assistant.agent.spec.ts`
 
 Sociable: real tools + `OrdersService`; double only the model. Assert tool step **output**, not spies on `OrdersService`.
 
-- [x] Model requests `lookupOrder` → tool result state matches `ord_1001` for `demo-user`
-- [x] Model requests `listOrders` → result lists only demo-user orders
-- [x] Cross-user order id in tool input → tool-error path (ownership holds under the agent)
+- [x] Model requests `lookupOrder` -> tool result state matches `ord_1001` for `demo-user`
+- [x] Model requests `listOrders` -> result lists only demo-user orders
+- [x] Cross-user order id in tool input -> tool-error path (ownership holds under the agent)
 - [x] Step budget: mock model that keeps requesting tools; assert finite stop via `stepCountIs(8)`
 
 ### 4. Chat - `ChatService` + store
@@ -136,10 +136,10 @@ Targets: `src/chat/chat.service.spec.ts`, `src/chat/in-memory-conversation.store
 
 Targets: `src/common/auth.guard.spec.ts`, `src/common/http-exception.filter.spec.ts`
 
-- [x] `AuthGuard`: no `x-user-id` → `demo-user` on the request context
-- [x] `AuthGuard`: header present → that user id
-- [x] `HttpExceptionFilter`: `NotFoundException` → JSON status/body
-- [x] `HttpExceptionFilter`: headers already sent → no double-write
+- [x] `AuthGuard`: no `x-user-id` -> `demo-user` on the request context
+- [x] `AuthGuard`: header present -> that user id
+- [x] `HttpExceptionFilter`: `NotFoundException` -> JSON status/body
+- [x] `HttpExceptionFilter`: headers already sent -> no double-write
 
 ### 6. Model - `ModelService`
 
@@ -156,11 +156,11 @@ Target: `test/app.e2e-spec.ts`
 
 Override `ModelService.getModel()` with a scripted mock model.
 
-- [x] `GET /conversations/:id` → `[]` when empty
-- [x] `POST /chat` without `messages` → 400
-- [x] `POST /chat` valid body → 200 streaming response
-- [x] `POST /chat` + `conversationId` → subsequent `GET /conversations/:id` returns saved messages
-- [x] `x-user-id: other-user` + mock tool-call for `ord_1001` → no demo-user order leakage
+- [x] `GET /conversations/:id` -> `[]` when empty
+- [x] `POST /chat` without `messages` -> 400
+- [x] `POST /chat` valid body -> 200 streaming response
+- [x] `POST /chat` + `conversationId` -> subsequent `GET /conversations/:id` returns saved messages
+- [x] `x-user-id: other-user` + mock tool-call for `ord_1001` -> no demo-user order leakage
 
 ### 8. Browser e2e - sample chat UI
 

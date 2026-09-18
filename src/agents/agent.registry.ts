@@ -5,7 +5,7 @@ import type { NestAgent } from './agent.js';
 export const DEFAULT_AGENT_ID = 'assistant';
 
 /**
- * Explicit map of agent id → NestAgent.
+ * Explicit map of agent id -> NestAgent.
  * Add a second agent by injecting it here and calling `register`.
  */
 @Injectable()
