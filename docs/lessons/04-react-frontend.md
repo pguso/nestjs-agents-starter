@@ -1,4 +1,4 @@
-# Lesson 4 — React frontend
+# Lesson 4 - React frontend
 
 This repo is backend-only. A React (or Next.js) app should treat Nest as a remote API: stream chat with the AI SDK, load history with ordinary `fetch`, and use OpenAPI only where it helps.
 
@@ -6,9 +6,9 @@ This repo is backend-only. A React (or Next.js) app should treat Nest as a remot
 
 Already configured in [`main.ts`](../../src/main.ts):
 
-- `app.enableCors()` — fine for local Vite/Next origins; tighten `origin` in production.
+- CORS via `CORS_ORIGINS` (comma-separated). Unset allows all origins in non-production; set an explicit list before production.
 - Swagger at `/docs` for humans exploring REST.
-- Global auth stub: send `x-user-id` if you want a non-default user (see [`AuthGuard`](../../src/common/auth.guard.ts)).
+- Global auth: `AUTH_MODE=dev` uses `x-user-id` (default `demo-user`); `AUTH_MODE=jwt` expects a Bearer token (see [`AuthGuard`](../../src/common/auth.guard.ts)).
 
 ## Chat: use AI SDK `useChat`, not Swagger
 
@@ -64,7 +64,7 @@ const res = await fetch(
 const messages = await res.json(); // UIMessage[]
 ```
 
-Seed `useChat` with those messages (initial messages / controlled state — follow the AI SDK version you pin). This endpoint is the one that works cleanly in Swagger Try it out.
+Seed `useChat` with those messages (initial messages / controlled state - follow the AI SDK version you pin). This endpoint is the one that works cleanly in Swagger Try it out.
 
 ## Auth header today vs production
 

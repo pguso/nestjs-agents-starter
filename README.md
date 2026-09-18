@@ -8,7 +8,7 @@ If you want to understand what happens under the hood first (tool loops, memory,
 
 ## Getting started
 
-You need Node.js 20 or newer.
+You need Node.js 20 or newer (see [`.nvmrc`](.nvmrc)).
 
 ```bash
 git clone https://github.com/pguso/nestjs-agents-starter.git my-project
@@ -25,7 +25,9 @@ AI_MODEL=gpt-4.1-mini
 OPENAI_API_KEY=sk-...
 ```
 
-To run everything locally without an API key, set `AI_PROVIDER=ollama` and point `OLLAMA_BASE_URL` at your Ollama instance.
+The process **validates env at boot** and exits with a clear message if the selected provider is missing a key.
+
+To run everything locally without a cloud API key, set `AI_PROVIDER=ollama` and point `OLLAMA_BASE_URL` at your Ollama instance - or use Docker Compose (below).
 
 Then start the dev server:
 
@@ -33,26 +35,60 @@ Then start the dev server:
 npm run start:dev
 ```
 
-OpenAPI docs are at [http://localhost:3000/docs](http://localhost:3000/docs). `POST /chat` is a stream (use curl or a React `useChat` client for that); `GET /conversations/:id` works well from Swagger Try it out. Short lessons on structure, features, Swagger, and React live in [docs/lessons](docs/lessons).
+- OpenAPI: [http://localhost:3000/docs](http://localhost:3000/docs)
+- Health: [http://localhost:3000/health](http://localhost:3000/health)
+- Lessons: [docs/lessons](docs/lessons)
+- Deployment: [docs/deployment.md](docs/deployment.md)
 
 Send a message to the example agent:
 
 ```bash
 curl -N http://localhost:3000/chat \
   -H "Content-Type: application/json" \
+  -H "x-user-id: demo-user" \
   -d '{"messages":[{"id":"1","role":"user","parts":[{"type":"text","text":"What can you do?"}]}]}'
 ```
 
 You should see the response arrive as a stream.
 
+### Docker Compose (app + Ollama)
+
+```bash
+docker compose up --build
+docker compose exec ollama ollama pull llama3.2
+curl -s http://localhost:3000/health
+```
+
+Compose defaults to `AI_PROVIDER=ollama`. Override with a `.env` file if you prefer OpenAI/Anthropic keys on the host.
+
+### Troubleshooting
+
+| Symptom | Likely cause |
+|---------|----------------|
+| Process exits on start mentioning `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Wrong `AI_PROVIDER` or empty key - fix `.env` or use `ollama` |
+| Stream errors / connection refused to Ollama | Ollama not running, or wrong `OLLAMA_BASE_URL`; pull the model (`ollama pull …`) |
+| Empty or truncated stream behind nginx | Disable proxy buffering; see [docs/deployment.md](docs/deployment.md) |
+| `401` with `AUTH_MODE=jwt` | Send `Authorization: Bearer …` with a payload that includes `sub` (starter stub), or switch back to `AUTH_MODE=dev` |
+
+## Production checklist
+
+Before you ship:
+
+1. Set `AUTH_MODE=jwt` and **replace** the unsigned JWT stub in `AuthGuard` with real verification.
+2. Set `CORS_ORIGINS` to your frontend origin(s).
+3. Swap `InMemoryConversationStore` for a durable, **user-scoped** store (see `PostgresConversationStore` skeleton).
+4. Run behind a reverse proxy configured for streaming.
+
 ## How the project is laid out
 
 ```
 src/
-  agents/        agent definitions, one file per agent
+  agents/        agent definitions + AgentRegistry
   tools/         tools as injectable providers
   chat/          streaming controller and conversation storage
   model/         provider setup, reads AI_PROVIDER and AI_MODEL
+  config/        boot-time env validation
+  health/        liveness endpoint
   common/        request context, guards, error mapping
   app.module.ts
 ```
@@ -82,11 +118,15 @@ Register it in `ToolsModule`, then add it to the agent that should have access t
 
 ## Adding an agent
 
-Copy `src/agents/assistant.agent.ts`, change the instructions and the tool list, and expose it through the chat controller or a controller of its own. The example agent uses `ToolLoopAgent` with a step limit, so a confused model can't loop forever and run up your bill.
+1. Copy `src/agents/assistant.agent.ts`, give it a unique `id`, change instructions and tools.
+2. Export it from `AgentsModule` and `register` it in `AgentRegistry` (inject it into the registry constructor or call `register` after construction).
+3. Call `POST /chat` with `"agentId": "your-id"` (default is `assistant`).
+
+The example agent uses `ToolLoopAgent` with a step limit, so a confused model can't loop forever and run up your bill.
 
 ## Conversations
 
-Messages are stored through a `ConversationStore` interface. The default implementation keeps them in memory, which is fine for development and useless for anything else. Swap in your own implementation (Postgres, Redis, whatever you already run) by providing a different class for the same token in `ChatModule`.
+Messages are stored through a `ConversationStore` interface keyed by **`(userId, conversationId)`**. The default implementation keeps them in memory, which is fine for development and useless for anything else. Swap in your own implementation (see the `PostgresConversationStore` skeleton) by providing a different class for the same token in `ChatModule`.
 
 ## Frontend
 
@@ -96,9 +136,12 @@ The `/chat` endpoint speaks the AI SDK UI message stream protocol, so a React ap
 
 ```bash
 npm test
+npm run test:e2e
 ```
 
-Tests follow the Chicago/Detroit (classicist) school: real collaborators, doubles only at the LLM boundary, and assertions on observable outcomes (tool results, store contents, HTTP)—not model wording or internal spies. See [docs/testing.md](docs/testing.md) for principles, the behavior inventory, and how to mock the model in agent and e2e specs.
+Or `npm run check` for lint + unit + e2e + build.
+
+Tests follow the Chicago/Detroit (classicist) school: real collaborators, doubles only at the LLM boundary, and assertions on observable outcomes (tool results, store contents, HTTP)-not model wording or internal spies. See [docs/testing.md](docs/testing.md) for principles, the behavior inventory, and how to mock the model in agent and e2e specs.
 
 ## Versions
 
@@ -106,8 +149,8 @@ The AI SDK moves quickly and has renamed things between major versions. This tem
 
 ## Contributing
 
-Issues and pull requests are welcome. If you want to propose a bigger structural change, open an issue first so we can talk it through before you put time into it.
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+MIT - see [LICENSE](LICENSE).

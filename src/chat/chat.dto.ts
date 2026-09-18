@@ -47,4 +47,13 @@ export class ChatRequestDto {
   @IsOptional()
   @IsString()
   conversationId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Agent id from the registry (default: `assistant`). Register more agents in AgentsModule.',
+    example: 'assistant',
+  })
+  @IsOptional()
+  @IsString()
+  agentId?: string;
 }

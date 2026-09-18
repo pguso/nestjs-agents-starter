@@ -1,4 +1,4 @@
-# Lesson 2 — Adding features
+# Lesson 2 - Adding features
 
 Patterns for extending this starter without breaking the layer boundaries from [Lesson 1](./01-project-structure.md).
 
@@ -10,7 +10,7 @@ Checklist:
 
 1. Create `src/tools/your-feature.tool.ts` (copy [`order-lookup.tool.ts`](../../src/tools/order-lookup.tool.ts)).
 2. Use a Zod `inputSchema` for tool arguments (tools use Zod; HTTP DTOs use `class-validator`).
-3. Call your domain service with `ctx.userId` — never trust an id from the model alone for authorization.
+3. Call your domain service with `ctx.userId` - never trust an id from the model alone for authorization.
 4. Register and export the tool in [`ToolsModule`](../../src/tools/tools.module.ts).
 5. Inject it into the agent that should have it and add it to the `tools: { ... }` map in `create()`.
 6. Add a unit test that calls `build(ctx)` / exercises the tool with a fixed context (see existing `*.tool.spec.ts`).
@@ -20,9 +20,11 @@ Do **not** register tools on a global map that every agent can reach. Explicit w
 ## Add an agent
 
 1. Copy [`assistant.agent.ts`](../../src/agents/assistant.agent.ts).
-2. Change instructions, tool list, and `MAX_STEPS` / `stopWhen` as needed.
-3. Export the agent from [`AgentsModule`](../../src/agents/agents.module.ts).
-4. Expose it either by injecting it into [`ChatService`](../../src/chat/chat.service.ts) (replace or branch) or by adding a dedicated controller under `chat/` (or a new feature module that owns HTTP for that agent).
+2. Set a unique `readonly id` (this is the `agentId` clients send).
+3. Change instructions, tool list, and `MAX_STEPS` / `stopWhen` as needed.
+4. Export the agent from [`AgentsModule`](../../src/agents/agents.module.ts).
+5. Inject it into [`AgentRegistry`](../../src/agents/agent.registry.ts) and call `register(...)` in the constructor (same place `AssistantAgent` is registered).
+6. Call `POST /chat` with `"agentId": "your-id"` (omit to use the default `assistant`).
 
 Agents must not import Express types or write to `Response`. Streaming belongs in the chat layer.
 
@@ -46,23 +48,29 @@ Swagger Try it out works well for these endpoints. See [Lesson 3](./03-swagger-o
 { provide: CONVERSATION_STORE, useClass: InMemoryConversationStore }
 ```
 
-Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load` / `save`) against Postgres, Redis, etc., then swap `useClass` (or `useFactory`). Controllers and agents do not change.
+Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(userId, conversationId)` / `save(userId, conversationId, messages)`) against Postgres, Redis, etc. Start from the [`PostgresConversationStore`](../../src/chat/postgres-conversation.store.ts) skeleton, then swap `useClass` (or `useFactory`). Controllers and agents do not change. Always key by user so history cannot leak across accounts.
 
 ## Auth beyond the stub
 
-[`AuthGuard`](../../src/common/auth.guard.ts) is a dev identity stub. To go to production:
+[`AuthGuard`](../../src/common/auth.guard.ts) supports:
 
-1. Replace the guard with JWT/session validation.
+- `AUTH_MODE=dev` (default): spoofable `x-user-id`
+- `AUTH_MODE=jwt`: requires Bearer token; starter reads an **unsigned** `sub` claim
+
+To go to production:
+
+1. Set `AUTH_MODE=jwt` and replace the guard with real JWT/JWKS or session validation.
 2. Still populate `RequestContext` the same way (`userId`, later roles, tenant, …).
-3. Keep tools reading only from `ctx` — not from raw headers inside tool code.
-4. Update the Swagger security scheme in [`main.ts`](../../src/main.ts) to match (Bearer instead of `x-user-id`).
+3. Keep tools reading only from `ctx` - not from raw headers inside tool code.
+4. Set `CORS_ORIGINS` and update the Swagger security scheme in [`main.ts`](../../src/main.ts) to match.
+5. See [Deployment](../deployment.md).
 
 ## Feature integration rules (summary)
 
 | Kind | Where | Document with Swagger? |
 |------|-------|-------------------------|
 | Tool | `tools/` + agent wiring | No (not HTTP) |
-| Agent | `agents/` | No (not HTTP) |
+| Agent | `agents/` + `AgentRegistry` | No (not HTTP) |
 | Stream chat | `chat/` controller + service | Yes, but mark as stream / limited Try it out |
 | JSON REST | controller + DTO | Yes, full Try it out |
 | Store | `ConversationStore` impl | No |

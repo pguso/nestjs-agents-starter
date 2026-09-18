@@ -23,6 +23,7 @@ describe('Chat (e2e)', () => {
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
+        forbidNonWhitelisted: true,
         transform: true,
       }),
     );
@@ -31,6 +32,16 @@ describe('Chat (e2e)', () => {
 
   afterEach(async () => {
     await app?.close();
+  });
+
+  it('GET /health returns ok', async () => {
+    const { model } = createScriptedModel(['stop']);
+    await bootWithModel(model);
+
+    await request(app.getHttpServer())
+      .get('/health')
+      .expect(200)
+      .expect({ status: 'ok' });
   });
 
   it('GET /conversations/:id returns empty history', async () => {
@@ -76,6 +87,7 @@ describe('Chat (e2e)', () => {
 
     await request(app.getHttpServer())
       .post('/chat')
+      .set('x-user-id', 'demo-user')
       .send({
         conversationId: 'e2e-conv',
         messages: [
@@ -90,6 +102,7 @@ describe('Chat (e2e)', () => {
 
     const history = await request(app.getHttpServer())
       .get('/conversations/e2e-conv')
+      .set('x-user-id', 'demo-user')
       .expect(200);
 
     expect(Array.isArray(history.body)).toBe(true);
@@ -97,6 +110,39 @@ describe('Chat (e2e)', () => {
     expect(history.body[0]).toMatchObject({
       role: 'user',
     });
+  });
+
+  it('does not expose one user conversation history to another user', async () => {
+    const { model } = createScriptedModel(['stop']);
+    await bootWithModel(model);
+
+    await request(app.getHttpServer())
+      .post('/chat')
+      .set('x-user-id', 'user-a')
+      .send({
+        conversationId: 'shared-conv',
+        messages: [
+          {
+            id: '1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'private to user-a' }],
+          },
+        ],
+      })
+      .expect(200);
+
+    const ownerHistory = await request(app.getHttpServer())
+      .get('/conversations/shared-conv')
+      .set('x-user-id', 'user-a')
+      .expect(200);
+
+    expect(ownerHistory.body.length).toBeGreaterThan(0);
+
+    await request(app.getHttpServer())
+      .get('/conversations/shared-conv')
+      .set('x-user-id', 'user-b')
+      .expect(200)
+      .expect([]);
   });
 
   it('scopes tool results to x-user-id and does not leak demo-user orders', async () => {

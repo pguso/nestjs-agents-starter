@@ -1,4 +1,4 @@
-# Lesson 3 — Swagger / OpenAPI
+# Lesson 3 - Swagger / OpenAPI
 
 OpenAPI documents the **HTTP** surface of this app so humans and REST clients can discover routes, bodies, and headers. It does not replace the AI SDK stream protocol for chat.
 
@@ -7,8 +7,8 @@ OpenAPI documents the **HTTP** surface of this app so humans and REST clients ca
 | Piece | Location |
 |-------|----------|
 | Dependency | `@nestjs/swagger` |
-| Document + UI | [`main.ts`](../../src/main.ts) — `DocumentBuilder`, `SwaggerModule.setup('docs', ...)` |
-| CLI plugin | [`nest-cli.json`](../../nest-cli.json) — infers DTO metadata, shims `class-validator` |
+| Document + UI | [`main.ts`](../../src/main.ts) - `DocumentBuilder`, `SwaggerModule.setup('docs', ...)` |
+| CLI plugin | [`nest-cli.json`](../../nest-cli.json) - infers DTO metadata, shims `class-validator` |
 | Route annotations | [`chat.controller.ts`](../../src/chat/chat.controller.ts) |
 | Body / response schemas | [`chat.dto.ts`](../../src/chat/chat.dto.ts) |
 | Auth scheme | API key security named `x-user-id` (header), matching [`AuthGuard`](../../src/common/auth.guard.ts) |
@@ -37,7 +37,7 @@ curl -N http://localhost:3000/chat \
 
 or a React `useChat` client ([Lesson 4](./04-react-frontend.md)).
 
-`GET /conversations/:id` is normal JSON — use Try it out freely (empty array if the id was never saved).
+`GET /conversations/:id` is normal JSON - use Try it out freely (empty array if the id was never saved).
 
 ## Document a new endpoint
 

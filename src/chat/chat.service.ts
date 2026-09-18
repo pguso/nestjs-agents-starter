@@ -6,7 +6,7 @@ import {
   type UIMessage,
 } from 'ai';
 import type { RequestContext } from '../common/request-context.js';
-import { AssistantAgent } from '../agents/assistant.agent.js';
+import { AgentRegistry, DEFAULT_AGENT_ID } from '../agents/agent.registry.js';
 import {
   CONVERSATION_STORE,
   type ConversationStore,
@@ -21,7 +21,7 @@ function ensureMessageIds(messages: UIMessage[]): UIMessage[] {
 @Injectable()
 export class ChatService {
   constructor(
-    private readonly assistant: AssistantAgent,
+    private readonly agents: AgentRegistry,
     @Inject(CONVERSATION_STORE)
     private readonly conversations: ConversationStore,
   ) {}
@@ -30,11 +30,19 @@ export class ChatService {
     ctx: RequestContext;
     messages: UIMessage[];
     conversationId?: string;
+    agentId?: string;
     response: Response;
     abortSignal: AbortSignal;
   }): Promise<void> {
-    const { ctx, messages, conversationId, response, abortSignal } = params;
-    const agent = this.assistant.create(ctx);
+    const {
+      ctx,
+      messages,
+      conversationId,
+      agentId = DEFAULT_AGENT_ID,
+      response,
+      abortSignal,
+    } = params;
+    const agent = this.agents.get(agentId).create(ctx);
     const uiMessages = ensureMessageIds(messages);
 
     await pipeAgentUIStreamToResponse({
@@ -46,12 +54,15 @@ export class ChatService {
         if (!conversationId) {
           return;
         }
-        await this.conversations.save(conversationId, finalMessages);
+        await this.conversations.save(ctx.userId, conversationId, finalMessages);
       },
     });
   }
 
-  async loadConversation(conversationId: string): Promise<UIMessage[]> {
-    return this.conversations.load(conversationId);
+  async loadConversation(
+    userId: string,
+    conversationId: string,
+  ): Promise<UIMessage[]> {
+    return this.conversations.load(userId, conversationId);
   }
 }

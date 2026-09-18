@@ -33,8 +33,9 @@ export class ChatController {
     summary: 'Stream a chat turn with the assistant agent',
     description: [
       'Streams the AI SDK UI message protocol via `pipeAgentUIStreamToResponse`.',
-      'Swagger Try it out cannot usefully play this stream — use curl (`curl -N`) or a React `useChat` transport pointed at this URL.',
-      'Optional `conversationId` persists the finished message list through `ConversationStore`.',
+      'Swagger Try it out cannot usefully play this stream - use curl (`curl -N`) or a React `useChat` transport pointed at this URL.',
+      'Optional `conversationId` persists the finished message list through `ConversationStore` (scoped to the current user).',
+      'Optional `agentId` selects an agent from `AgentRegistry` (default `assistant`).',
     ].join(' '),
   })
   @ApiBody({ type: ChatRequestDto })
@@ -54,6 +55,7 @@ export class ChatController {
         ctx,
         messages: body.messages,
         conversationId: body.conversationId,
+        agentId: body.agentId,
         response: res,
         abortSignal: abortController.signal,
       });
@@ -66,14 +68,17 @@ export class ChatController {
   @ApiOperation({
     summary: 'Load a stored conversation',
     description:
-      'Returns the message list saved for `id`, or an empty array if nothing was stored. Suitable for Swagger Try it out.',
+      'Returns the message list saved for `id` for the current user (from `x-user-id`), or an empty array if nothing was stored. Suitable for Swagger Try it out.',
   })
   @ApiParam({ name: 'id', example: 'conv_123' })
   @ApiOkResponse({
     description: 'Stored AI SDK UI messages (empty array when missing).',
     type: [UiMessageDto],
   })
-  async getConversation(@Param('id') id: string) {
-    return this.chatService.loadConversation(id);
+  async getConversation(
+    @Param('id') id: string,
+    @CurrentContext() ctx: RequestContext,
+  ) {
+    return this.chatService.loadConversation(ctx.userId, id);
   }
 }

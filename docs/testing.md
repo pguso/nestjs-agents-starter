@@ -9,7 +9,7 @@ This project follows the **Chicago / Detroit / classicist** approach to automate
 | Unit = **unit of behavior** | Prefer sociable tests spanning collaborators (e.g. tool + `OrdersService`), not one mock-heavy class at a time |
 | Isolation = **tests don’t share state** | Fresh Nest modules / fresh service instances per test; no cross-test `Map` residue |
 | Doubles only at **external / shared** boundaries | Double the **LLM** (`MockLanguageModelV3`); keep real `OrdersService`, tools, in-memory store |
-| Prefer **state verification** | Assert returned orders, store contents, HTTP status/body, stream outcome—not `toHaveBeenCalledWith` on internal methods |
+| Prefer **state verification** | Assert returned orders, store contents, HTTP status/body, stream outcome-not `toHaveBeenCalledWith` on internal methods |
 | Bottom-up | Domain → tools → agent (with mock model) → chat persistence → HTTP e2e |
 | Refactor resilience | Don’t couple tests to private wiring or spy call graphs |
 
@@ -74,7 +74,7 @@ expect(toolOutputs(result)).toContainEqual({
 ## Commands
 
 ```bash
-npm test          # vitest run — src/**/*.spec.ts
+npm test          # vitest run - src/**/*.spec.ts
 npm run test:watch
 npm run test:cov  # coverage via @vitest/coverage-v8
 npm run test:e2e  # vitest run --config ./vitest.config.e2e.ts
@@ -82,7 +82,7 @@ npm run test:e2e  # vitest run --config ./vitest.config.e2e.ts
 
 ## Behavior inventory
 
-### 1. Domain — `OrdersService`
+### 1. Domain - `OrdersService`
 
 Target: `src/tools/orders.service.spec.ts`
 
@@ -92,7 +92,7 @@ Target: `src/tools/orders.service.spec.ts`
 - [x] `listForUser` returns only that user’s rows
 - [x] Fresh service instance per test (seed data is constructor-local)
 
-### 2. Tools — `OrderLookupTool`, `ListOrdersTool`
+### 2. Tools - `OrderLookupTool`, `ListOrdersTool`
 
 Targets: `src/tools/order-lookup.tool.spec.ts`, `src/tools/list-orders.tool.spec.ts`
 
@@ -103,7 +103,7 @@ Targets: `src/tools/order-lookup.tool.spec.ts`, `src/tools/list-orders.tool.spec
 
 No service mocks in these specs.
 
-### 3. Agent — `AssistantAgent` + mock model
+### 3. Agent - `AssistantAgent` + mock model
 
 Target: `src/agents/assistant.agent.spec.ts`
 
@@ -114,7 +114,7 @@ Sociable: real tools + `OrdersService`; double only the model. Assert tool step 
 - [x] Cross-user order id in tool input → tool-error path (ownership holds under the agent)
 - [x] Step budget: mock model that keeps requesting tools; assert finite stop via `stepCountIs(8)`
 
-### 4. Chat — `ChatService` + store
+### 4. Chat - `ChatService` + store
 
 Targets: `src/chat/chat.service.spec.ts`, `src/chat/in-memory-conversation.store.spec.ts`
 
@@ -124,7 +124,7 @@ Targets: `src/chat/chat.service.spec.ts`, `src/chat/in-memory-conversation.store
 - [x] `loadConversation` returns what was saved
 - [x] Abort does not corrupt unrelated conversation ids
 
-### 5. Common — auth context & errors
+### 5. Common - auth context & errors
 
 Targets: `src/common/auth.guard.spec.ts`, `src/common/http-exception.filter.spec.ts`
 
@@ -133,7 +133,7 @@ Targets: `src/common/auth.guard.spec.ts`, `src/common/http-exception.filter.spec
 - [x] `HttpExceptionFilter`: `NotFoundException` → JSON status/body
 - [x] `HttpExceptionFilter`: headers already sent → no double-write
 
-### 6. Model — `ModelService`
+### 6. Model - `ModelService`
 
 Target: `src/model/model.service.spec.ts`
 
@@ -158,8 +158,8 @@ Override `ModelService.getModel()` with a scripted mock model.
 
 Add a test double when the dependency is:
 
-- **External** — LLM providers, third-party HTTP APIs
-- **Shared mutable infrastructure** — a real database or Redis that would couple tests or slow the suite
+- **External** - LLM providers, third-party HTTP APIs
+- **Shared mutable infrastructure** - a real database or Redis that would couple tests or slow the suite
 
 Do **not** add a double when:
 

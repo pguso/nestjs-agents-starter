@@ -4,6 +4,7 @@ import { ChatController } from './chat.controller.js';
 import { ChatService } from './chat.service.js';
 import { CONVERSATION_STORE } from './conversation-store.js';
 import { InMemoryConversationStore } from './in-memory-conversation.store.js';
+// import { PostgresConversationStore } from './postgres-conversation.store.js';
 
 @Module({
   imports: [AgentsModule],
@@ -13,6 +14,8 @@ import { InMemoryConversationStore } from './in-memory-conversation.store.js';
     {
       provide: CONVERSATION_STORE,
       useClass: InMemoryConversationStore,
+      // Swap for durable storage:
+      // useClass: PostgresConversationStore,
     },
   ],
 })
