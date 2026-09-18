@@ -4,7 +4,7 @@ import { ChatController } from './chat.controller.js';
 import { ChatService } from './chat.service.js';
 import { CONVERSATION_STORE } from './conversation-store.js';
 import { InMemoryConversationStore } from './in-memory-conversation.store.js';
-// Skeleton only — copy/implement before binding (fails at module init if bound as-is):
+// Skeleton only - copy/implement before binding (fails at module init if bound as-is):
 // import { PostgresConversationStore } from './postgres-conversation.store.skeleton.js';
 
 @Module({

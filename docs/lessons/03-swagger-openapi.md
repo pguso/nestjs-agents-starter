@@ -11,7 +11,7 @@ OpenAPI documents the **HTTP** surface of this app so humans and REST clients ca
 | CLI plugin | [`nest-cli.json`](../../nest-cli.json) - infers DTO metadata, shims `class-validator` |
 | Route annotations | [`chat.controller.ts`](../../src/chat/chat.controller.ts) |
 | Body / response schemas | [`chat.dto.ts`](../../src/chat/chat.dto.ts) |
-| Auth scheme | Starter stubs in [`main.ts`](../../src/main.ts): `x-user-id` (AUTH_MODE=dev) and Bearer (`jwt` / `jwt-stub`) — descriptions lead with “Starter stub” |
+| Auth scheme | Starter stubs in [`main.ts`](../../src/main.ts): `x-user-id` (AUTH_MODE=dev) and Bearer (`jwt` / `jwt-stub`) - descriptions lead with “Starter stub” |
 
 After `npm run start:dev`:
 
@@ -37,7 +37,7 @@ curl -N http://localhost:3000/chat \
 
 or a React `useChat` client ([Lesson 4](./04-react-frontend.md)).
 
-`GET /conversations/:id` is normal JSON - use Try it out freely. Empty `[]` means missing or empty for the **current user**, not an error — and not proof another user’s conversation id exists or is authorized.
+`GET /conversations/:id` is normal JSON - use Try it out freely. Empty `[]` means missing or empty for the **current user**, not an error - and not proof another user’s conversation id exists or is authorized.
 
 ## Document a new endpoint
 

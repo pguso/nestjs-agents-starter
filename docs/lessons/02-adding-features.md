@@ -50,7 +50,19 @@ Swagger Try it out works well for these endpoints. See [Lesson 3](./03-swagger-o
 { provide: CONVERSATION_STORE, useClass: InMemoryConversationStore }
 ```
 
-Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(userId, conversationId)` / `save(userId, conversationId, messages)`) against Postgres, Redis, etc. Start from the [`postgres-conversation.store.skeleton.ts`](../../src/chat/postgres-conversation.store.skeleton.ts) file (copy it, implement `load`/`save`, then bind — binding the skeleton as-is fails at module init). Controllers and agents do not change. Always key by user so history cannot leak across accounts. Boot logs `conversation store = in-memory (ephemeral)` while the default store is bound.
+Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(userId, conversationId)` / `save(userId, conversationId, messages)`) against Postgres, Redis, etc. Start from the [`postgres-conversation.store.skeleton.ts`](../../src/chat/postgres-conversation.store.skeleton.ts) file (copy it, implement `load`/`save`, then bind - binding the skeleton as-is fails at module init). Controllers and agents do not change. Always key by user so history cannot leak across accounts. Boot logs `conversation store = in-memory (ephemeral)` while the default store is bound.
+
+### Postgres vs Redis for agent chat
+
+Agent APIs need durable, **user-scoped** history once you leave a single-process demo: restart survival and **more than one Nest replica** both break in-memory storage. Agents and tools stay the same; only the `ConversationStore` implementation changes.
+
+| Store | Role in this kind of project |
+|-------|------------------------------|
+| **In-memory** | Local demos and tests ([Testing](../testing.md)). Ephemeral; not shared across instances. |
+| **Postgres** | Default **system of record** for conversation threads (JSONB message lists, backups, migrations, optional admin/query). Use when users resume chats later or you scale horizontally. Local: optional Compose Postgres + `DATABASE_URL`. Prod: managed Postgres - not a DB co-located in the app container. |
+| **Redis** | Optional **cache / short-lived** state (sessions, rate limits, pub/sub), or a hot cache in front of Postgres. Weak as the *only* history store unless you accept TTL/loss and persistence ops. Add it when you already need Redis for other Nest concerns - not solely for chat. |
+
+Keep keys as `(userId, conversationId)`. See [Deployment](../deployment.md) for production env notes.
 
 ## Auth beyond the stub
 
@@ -63,7 +75,7 @@ Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(use
 To go to production:
 
 1. Set `AUTH_MODE=jwt` and `JWT_SECRET`. Boot refuses `dev` and `jwt-stub` when `NODE_ENV=production`.
-2. For Auth0/Clerk/Cognito, swap HS256 for JWKS in the guard — still populate `RequestContext` the same way (`userId`, later roles, tenant, …).
+2. For Auth0/Clerk/Cognito, swap HS256 for JWKS in the guard - still populate `RequestContext` the same way (`userId`, later roles, tenant, …).
 3. Keep tools reading only from `ctx` - not from raw headers inside tool code.
 4. Set `CORS_ORIGINS` and update the Swagger security scheme in [`main.ts`](../../src/main.ts) to match.
 5. See [Deployment](../deployment.md).

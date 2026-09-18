@@ -45,7 +45,7 @@ Copy [`.env.example`](../.env.example). Boot fails fast if the selected provider
 
 Before exposing the API:
 
-1. Set `AUTH_MODE=jwt` and `JWT_SECRET` (required when `NODE_ENV=production`). Optionally set `JWT_ISSUER` / `JWT_AUDIENCE`. For Auth0/Clerk/Cognito, replace HS256 with JWKS in [`AuthGuard`](../src/common/auth.guard.ts) — still populate `RequestContext` the same way.
+1. Set `AUTH_MODE=jwt` and `JWT_SECRET` (required when `NODE_ENV=production`). Optionally set `JWT_ISSUER` / `JWT_AUDIENCE`. For Auth0/Clerk/Cognito, replace HS256 with JWKS in [`AuthGuard`](../src/common/auth.guard.ts) - still populate `RequestContext` the same way.
 2. Set `CORS_ORIGINS` to your frontend origin(s).
 3. Keep populating `RequestContext` the same way so tools stay user-scoped.
 
@@ -59,7 +59,7 @@ Errors and agent logs include `requestId` (from `x-request-id` or a generated UU
 
 ## Conversations
 
-The default store is in-memory and user-scoped (`userId` + `conversationId`). Boot warns `conversation store = in-memory (ephemeral)`. For production, copy [`postgres-conversation.store.skeleton.ts`](../src/chat/postgres-conversation.store.skeleton.ts), implement `load`/`save`, then swap the provider in [`ChatModule`](../src/chat/chat.module.ts) (binding the skeleton as-is fails at module init).
+The default store is in-memory and user-scoped (`userId` + `conversationId`). Boot warns `conversation store = in-memory (ephemeral)`. For production, copy [`postgres-conversation.store.skeleton.ts`](../src/chat/postgres-conversation.store.skeleton.ts), implement `load`/`save`, then swap the provider in [`ChatModule`](../src/chat/chat.module.ts) (binding the skeleton as-is fails at module init). When to choose Postgres vs Redis (and why agent APIs care): [Lesson 2 - Persist conversations](lessons/02-adding-features.md#persist-conversations-differently).
 
 ## Streaming and reverse proxies
 

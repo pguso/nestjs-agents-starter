@@ -37,11 +37,11 @@ export class AuthGuard implements CanActivate, OnModuleInit {
     const mode = this.authMode();
     if (mode === 'dev') {
       this.logger.warn(
-        'AUTH_MODE=dev: identity is spoofable via the x-user-id header. Local development only — never expose this process publicly.',
+        'AUTH_MODE=dev: identity is spoofable via the x-user-id header. Local development only - never expose this process publicly.',
       );
     } else if (mode === 'jwt-stub') {
       this.logger.warn(
-        'AUTH_MODE=jwt-stub: Bearer tokens are NOT signature-verified (unsigned sub only). Local/demo only — use AUTH_MODE=jwt with JWT_SECRET for verified tokens.',
+        'AUTH_MODE=jwt-stub: Bearer tokens are NOT signature-verified (unsigned sub only). Local/demo only - use AUTH_MODE=jwt with JWT_SECRET for verified tokens.',
       );
     }
   }

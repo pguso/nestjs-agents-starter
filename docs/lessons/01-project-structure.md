@@ -8,7 +8,7 @@ This template splits agent work into layers so HTTP, models, tools, and domain l
 src/
   agents/     what the agent is for (instructions, tools, step limits) + AgentRegistry
   tools/      AI SDK tool wrappers (`build(ctx)`) that call domain services
-  orders/     sample domain (`OrdersService`) — keep tools thin
+  orders/     sample domain (`OrdersService`) - keep tools thin
   chat/       HTTP, streaming, conversation persistence
   model/      AI provider selection (openai | anthropic | ollama)
   config/     boot-time env validation

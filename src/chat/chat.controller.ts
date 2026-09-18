@@ -64,7 +64,7 @@ export class ChatController {
     summary: 'Load a stored conversation',
     description: [
       'Returns the message list saved for `id` for the **current user** only (identity from auth, not from the path).',
-      'Empty `[]` means missing or empty for this user — not an error, and not proof the id is valid for another user.',
+      'Empty `[]` means missing or empty for this user - not an error, and not proof the id is valid for another user.',
       'Do not treat `[]` as authorization success against someone else’s conversation id.',
       'Suitable for Swagger Try it out.',
     ].join(' '),
