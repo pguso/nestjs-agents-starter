@@ -30,7 +30,7 @@ Philosophy matches [docs/testing.md](../testing.md): assert **observable outcome
 ```
 ┌─────────────────────────────────────────┐
 │  Demo suite (default CI)                │
-│  /?demo -> static UIMessage fixture      │
+│  /?demo -> static UIMessage fixture     │
 │  No Nest, no API keys, no LLM           │
 └─────────────────────────────────────────┘
 ┌─────────────────────────────────────────┐
