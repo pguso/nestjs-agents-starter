@@ -60,7 +60,7 @@ sequenceDiagram
   ChatService->>ConversationStore: save userId+conversationId if set
 ```
 
-### 1. Identity → `RequestContext`
+### 1. AuthGuard: attach `RequestContext`
 
 [`AuthGuard`](../../src/common/auth.guard.ts) runs before the controller. In `AUTH_MODE=dev` it reads `x-user-id` (default `demo-user`), builds a [`RequestContext`](../../src/common/request-context.ts), and hangs it on the request so later layers can inject it with `@CurrentContext()`.
 
