@@ -10,6 +10,12 @@ export class InMemoryConversationStore
   private readonly conversations = new Map<string, UIMessage[]>();
 
   onModuleInit(): void {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'InMemoryConversationStore is not allowed when NODE_ENV=production (ephemeral; not shared across instances). Swap for a durable ConversationStore in ChatModule (copy postgres-conversation.store.skeleton.ts, implement load/save, then bind).',
+      );
+    }
+
     this.logger.warn(
       'conversation store = in-memory (ephemeral). Lost on restart; not shared across instances. Swap for a durable ConversationStore before production.',
     );

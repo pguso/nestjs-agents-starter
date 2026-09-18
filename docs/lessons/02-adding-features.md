@@ -50,7 +50,7 @@ Swagger Try it out works well for these endpoints. See [Lesson 3](./03-swagger-o
 { provide: CONVERSATION_STORE, useClass: InMemoryConversationStore }
 ```
 
-Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(userId, conversationId)` / `save(userId, conversationId, messages)`) against Postgres, Redis, etc. Start from the [`postgres-conversation.store.skeleton.ts`](../../src/chat/postgres-conversation.store.skeleton.ts) file (copy it, implement `load`/`save`, then bind - binding the skeleton as-is fails at module init). Controllers and agents do not change. Always key by user so history cannot leak across accounts. Boot logs `conversation store = in-memory (ephemeral)` while the default store is bound.
+Implement [`ConversationStore`](../../src/chat/conversation-store.ts) (`load(userId, conversationId)` / `save(userId, conversationId, messages)`) against Postgres, Redis, etc. Start from the [`postgres-conversation.store.skeleton.ts`](../../src/chat/postgres-conversation.store.skeleton.ts) file (copy it, implement `load`/`save`, then bind - binding the skeleton as-is fails at module init). Controllers and agents do not change. Always key by user so history cannot leak across accounts. Boot warns `conversation store = in-memory (ephemeral)` while the default store is bound, and refuses to start when `NODE_ENV=production` (swap the store first).
 
 ### Postgres vs Redis for agent chat
 
@@ -68,13 +68,15 @@ Keep keys as `(userId, conversationId)`. See [Deployment](../deployment.md) for 
 
 [`AuthGuard`](../../src/common/auth.guard.ts) supports:
 
-- `AUTH_MODE=dev` (default): spoofable `x-user-id` (local only; boot warns)
-- `AUTH_MODE=jwt-stub`: unsigned Bearer `sub` (local/demo only; boot warns)
-- `AUTH_MODE=jwt`: verified HS256 Bearer via `JWT_SECRET` (optional `JWT_ISSUER` / `JWT_AUDIENCE`)
+- `AUTH_MODE=dev` (default): spoofable `x-user-id` (needs `ALLOW_INSECURE_AUTH=true` and `NODE_ENV=development`|`test`; boot warns)
+- `AUTH_MODE=jwt-stub`: unsigned Bearer `sub` (same local gate as `dev`; boot warns)
+- `AUTH_MODE=jwt`: verified HS256 Bearer via `JWT_SECRET` (optional `JWT_ISSUER` / `JWT_AUDIENCE`; no insecure-auth flag)
+
+Stub modes do **not** rely on `NODE_ENV=production` alone: unset `NODE_ENV` or `NODE_ENV=staging` with `AUTH_MODE=dev` still fails without an intentional local opt-in.
 
 To go to production:
 
-1. Set `AUTH_MODE=jwt` and `JWT_SECRET`. Boot refuses `dev` and `jwt-stub` when `NODE_ENV=production`.
+1. Set `AUTH_MODE=jwt` and `JWT_SECRET` (min 32 characters). Never set `ALLOW_INSECURE_AUTH` in deployed environments. Boot also refuses stubs when `NODE_ENV=production`.
 2. For Auth0/Clerk/Cognito, swap HS256 for JWKS in the guard - still populate `RequestContext` the same way (`userId`, later roles, tenant, …).
 3. Keep tools reading only from `ctx` - not from raw headers inside tool code.
 4. Set `CORS_ORIGINS` and update the Swagger security scheme in [`main.ts`](../../src/main.ts) to match.

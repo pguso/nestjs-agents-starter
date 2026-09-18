@@ -4,6 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import { AppModule } from './app.module.js';
+import { resolveListenHost } from './config/listen-host.js';
 
 function corsOriginOption(): boolean | string[] {
   const raw = process.env.CORS_ORIGINS?.trim();
@@ -55,7 +56,7 @@ async function bootstrap() {
         in: 'header',
         name: 'x-user-id',
         description:
-          'Starter stub - AUTH_MODE=dev only (spoofable). Defaults to `demo-user` when omitted. Prefer Bearer for AUTH_MODE=jwt or jwt-stub.',
+          'Starter stub - AUTH_MODE=dev only (spoofable). Requires ALLOW_INSECURE_AUTH + NODE_ENV=development|test. Defaults to `demo-user` when omitted. Prefer Bearer for AUTH_MODE=jwt.',
       },
       'x-user-id',
     )
@@ -65,7 +66,7 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
         description:
-          'Starter stub - AUTH_MODE=jwt verifies HS256 with JWT_SECRET; AUTH_MODE=jwt-stub is unsigned (local only). Not a full IdP integration.',
+          'AUTH_MODE=jwt verifies HS256 with JWT_SECRET. AUTH_MODE=jwt-stub is unsigned and needs ALLOW_INSECURE_AUTH (local only). Not a full IdP integration.',
       },
       'bearer',
     )
@@ -74,7 +75,12 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  const host = resolveListenHost({
+    HOST: process.env.HOST,
+    NODE_ENV: process.env.NODE_ENV,
+  });
+  await app.listen(port, host);
 }
 
 await bootstrap();

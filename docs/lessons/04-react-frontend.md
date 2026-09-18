@@ -11,7 +11,7 @@ Already configured in [`main.ts`](../../src/main.ts):
 - CORS via `CORS_ORIGINS` (comma-separated). Unset allows all origins in non-production; set `http://localhost:5173` when using the sample UI with a locked-down CORS list.
 - Helmet + body size limits (`BODY_SIZE_LIMIT`, default `256kb`).
 - Swagger at `/docs` for humans exploring REST.
-- Global auth: `AUTH_MODE=dev` uses `x-user-id` (default `demo-user`); `jwt` / `jwt-stub` expect Bearer tokens (see [`AuthGuard`](../../src/common/auth.guard.ts)).
+- Global auth: `AUTH_MODE=dev` uses `x-user-id` (needs `ALLOW_INSECURE_AUTH` + `NODE_ENV=development`); `jwt` / `jwt-stub` expect Bearer tokens (see [`AuthGuard`](../../src/common/auth.guard.ts)).
 - Rate limiting via `@nestjs/throttler` (`POST /chat` is capped at 20/min).
 
 ## Sample app (recommended)

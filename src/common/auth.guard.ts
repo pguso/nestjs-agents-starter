@@ -19,8 +19,9 @@ type AuthMode = 'dev' | 'jwt-stub' | 'jwt';
  * Identity guard.
  *
  * - AUTH_MODE=dev (default): reads `x-user-id`, defaults to `demo-user`.
+ *   Boot requires ALLOW_INSECURE_AUTH + NODE_ENV=development|test.
  * - AUTH_MODE=jwt-stub: requires Bearer token; reads `sub` from an unsigned
- *   payload (local/demo only).
+ *   payload (local/demo only; same boot gate as dev).
  * - AUTH_MODE=jwt: verifies HS256 Bearer JWT with JWT_SECRET; optional
  *   JWT_ISSUER / JWT_AUDIENCE. Prefer JWKS from your IdP for real SSO.
  *
@@ -37,11 +38,11 @@ export class AuthGuard implements CanActivate, OnModuleInit {
     const mode = this.authMode();
     if (mode === 'dev') {
       this.logger.warn(
-        'AUTH_MODE=dev: identity is spoofable via the x-user-id header. Local development only - never expose this process publicly.',
+        'AUTH_MODE=dev: identity is spoofable via the x-user-id header. Requires ALLOW_INSECURE_AUTH - never set that flag in deployed environments.',
       );
     } else if (mode === 'jwt-stub') {
       this.logger.warn(
-        'AUTH_MODE=jwt-stub: Bearer tokens are NOT signature-verified (unsigned sub only). Local/demo only - use AUTH_MODE=jwt with JWT_SECRET for verified tokens.',
+        'AUTH_MODE=jwt-stub: Bearer tokens are NOT signature-verified (unsigned sub only). Requires ALLOW_INSECURE_AUTH - use AUTH_MODE=jwt with JWT_SECRET for verified tokens.',
       );
     }
   }

@@ -126,7 +126,7 @@ Sociable: real tools + `OrdersService`; double only the model. Assert tool step 
 
 Targets: `src/chat/chat.service.spec.ts`, `src/chat/in-memory-conversation.store.spec.ts`
 
-- [x] `InMemoryConversationStore` round-trips messages; ids are isolated
+- [x] `InMemoryConversationStore` round-trips messages; ids are isolated; refuses `NODE_ENV=production`
 - [x] Without `conversationId`: stream completes; store stays empty for unrelated ids
 - [x] With `conversationId`: after finish, `load` returns final messages (user ids via `ensureMessageIds`)
 - [x] `loadConversation` returns what was saved

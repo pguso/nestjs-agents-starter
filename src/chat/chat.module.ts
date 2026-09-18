@@ -15,7 +15,8 @@ import { InMemoryConversationStore } from './in-memory-conversation.store.js';
     {
       provide: CONVERSATION_STORE,
       useClass: InMemoryConversationStore,
-      // Swap for durable storage after implementing a real store (not the .skeleton file):
+      // Swap for durable storage after implementing a real store (not the .skeleton file).
+      // Required when NODE_ENV=production - InMemoryConversationStore refuses to boot.
       // useClass: PostgresConversationStore,
     },
   ],

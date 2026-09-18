@@ -17,7 +17,7 @@ npm install
 cp .env.example .env
 ```
 
-Open `.env`, pick a provider and fill in the key:
+Open `.env`, pick a provider and fill in the key. Local stub auth (`AUTH_MODE=dev`) needs `NODE_ENV=development` and `ALLOW_INSECURE_AUTH=true` (already set in `.env.example`):
 
 ```bash
 AI_PROVIDER=openai        # openai | anthropic | ollama
@@ -69,7 +69,8 @@ Compose defaults to `AI_PROVIDER=ollama`. Override with a `.env` file if you pre
 | Process exits on start mentioning `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` | Wrong `AI_PROVIDER` or empty key - fix `.env` or use `ollama` |
 | Stream errors / connection refused to Ollama | Ollama not running, or wrong `OLLAMA_BASE_URL`; pull the model (`ollama pull …`) |
 | Empty or truncated stream behind nginx | Disable proxy buffering; see [docs/deployment.md](docs/deployment.md) |
-| `401` with `AUTH_MODE=jwt` | Send a signed HS256 Bearer JWT (`JWT_SECRET`); for unsigned local tokens use `AUTH_MODE=jwt-stub`, or switch to `AUTH_MODE=dev` |
+| `401` with `AUTH_MODE=jwt` | Send a signed HS256 Bearer JWT (`JWT_SECRET`); for unsigned local tokens use `AUTH_MODE=jwt-stub`, or switch to `AUTH_MODE=dev` (both stubs need `ALLOW_INSECURE_AUTH=true` and `NODE_ENV=development`) |
+| Boot exits mentioning `ALLOW_INSECURE_AUTH` / stub auth | Stub modes need an explicit local opt-in; unset `NODE_ENV` does not count - set `NODE_ENV=development` and `ALLOW_INSECURE_AUTH=true`, or use `AUTH_MODE=jwt` |
 
 ## Lessons
 
@@ -102,9 +103,9 @@ Start from [lesson 6](docs/lessons/06-ai-assisted-development.md) if you will ex
 
 Before you ship:
 
-1. Set `AUTH_MODE=jwt` and `JWT_SECRET` (boot refuses `dev` / `jwt-stub` when `NODE_ENV=production`). For IdP SSO, swap HS256 for JWKS in `AuthGuard`.
+1. Set `AUTH_MODE=jwt` and a `JWT_SECRET` of at least 32 characters. Boot refuses `dev` / `jwt-stub` when `NODE_ENV=production`, without `ALLOW_INSECURE_AUTH`, or when `NODE_ENV` is unset / not `development`|`test`. Never set `ALLOW_INSECURE_AUTH` in deployed environments. For IdP SSO, swap HS256 for JWKS in `AuthGuard`.
 2. Set `CORS_ORIGINS` to your frontend origin(s).
-3. Swap `InMemoryConversationStore` for a durable, **user-scoped** store (copy `postgres-conversation.store.skeleton.ts`, implement it, then bind - do not bind the skeleton as-is).
+3. Swap `InMemoryConversationStore` for a durable, **user-scoped** store (boot refuses the in-memory store when `NODE_ENV=production`). Copy `postgres-conversation.store.skeleton.ts`, implement it, then bind - do not bind the skeleton as-is.
 4. Run behind a reverse proxy configured for streaming.
 
 ## How the project is laid out
@@ -155,7 +156,7 @@ The example agent uses `ToolLoopAgent` with a step limit, so a confused model ca
 
 ## Conversations
 
-Messages are stored through a `ConversationStore` interface keyed by **`(userId, conversationId)`**. The default implementation keeps them in memory (boot warns `conversation store = in-memory (ephemeral)`), which is fine for development and useless for anything else. Swap in your own implementation by copying `postgres-conversation.store.skeleton.ts`, implementing `load`/`save`, and providing that class for the same token in `ChatModule`. `GET /conversations/:id` returns `[]` for missing or empty history for the current user - not an error, and not authorization success for another user’s id.
+Messages are stored through a `ConversationStore` interface keyed by **`(userId, conversationId)`**. The default implementation keeps them in memory (boot warns `conversation store = in-memory (ephemeral)`; boot **refuses** when `NODE_ENV=production`), which is fine for development and useless for anything else. Swap in your own implementation by copying `postgres-conversation.store.skeleton.ts`, implementing `load`/`save`, and providing that class for the same token in `ChatModule`. `GET /conversations/:id` returns `[]` for missing or empty history for the current user - not an error, and not authorization success for another user’s id.
 
 ## Frontend
 

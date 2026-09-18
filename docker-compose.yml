@@ -5,14 +5,17 @@ services:
       - '${PORT:-3000}:3000'
     environment:
       # Local compose demo: development + AUTH_MODE=dev (sample UI uses x-user-id).
-      # For production-like: NODE_ENV=production AUTH_MODE=jwt JWT_SECRET=...
+      # Stubs need ALLOW_INSECURE_AUTH - omit it (and use AUTH_MODE=jwt) for production-like runs.
+      # For production-like: NODE_ENV=production AUTH_MODE=jwt JWT_SECRET=... plus a durable ConversationStore.
       NODE_ENV: ${NODE_ENV:-development}
+      HOST: ${HOST:-0.0.0.0}
       PORT: 3000
       AI_PROVIDER: ${AI_PROVIDER:-ollama}
       AI_MODEL: ${AI_MODEL:-llama3.2}
       OLLAMA_BASE_URL: http://ollama:11434/v1
       OLLAMA_API_KEY: ollama
       AUTH_MODE: ${AUTH_MODE:-dev}
+      ALLOW_INSECURE_AUTH: ${ALLOW_INSECURE_AUTH:-true}
       JWT_SECRET: ${JWT_SECRET:-}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3000}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
