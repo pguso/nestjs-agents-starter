@@ -5,7 +5,10 @@ import { ListOrdersTool } from './list-orders.tool.js';
 describe('ListOrdersTool', () => {
   it('returns id, status, and totalCents for the current user only', async () => {
     const toolProvider = new ListOrdersTool(new OrdersService());
-    const built = toolProvider.build({ userId: 'demo-user' });
+    const built = toolProvider.build({
+      userId: 'demo-user',
+      requestId: 'test',
+    });
 
     const result = await built.execute!(
       {},
@@ -24,7 +27,10 @@ describe('ListOrdersTool', () => {
 
   it('never returns another users orders', async () => {
     const toolProvider = new ListOrdersTool(new OrdersService());
-    const built = toolProvider.build({ userId: 'other-user' });
+    const built = toolProvider.build({
+      userId: 'other-user',
+      requestId: 'test',
+    });
 
     const result = await built.execute!(
       {},

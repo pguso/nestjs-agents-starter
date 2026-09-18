@@ -2,10 +2,12 @@ import { EventEmitter } from 'node:events';
 import { describe, expect, it } from 'vitest';
 import type { Response } from 'express';
 import type { UIMessage } from 'ai';
+import type { ConfigService } from '@nestjs/config';
 import { ChatService } from './chat.service.js';
 import { InMemoryConversationStore } from './in-memory-conversation.store.js';
 import { AgentRegistry } from '../agents/agent.registry.js';
 import { AssistantAgent } from '../agents/assistant.agent.js';
+import { CancelOrderTool } from '../tools/cancel-order.tool.js';
 import { OrderLookupTool } from '../tools/order-lookup.tool.js';
 import { ListOrdersTool } from '../tools/list-orders.tool.js';
 import { OrdersService } from '../tools/orders.service.js';
@@ -44,7 +46,17 @@ function createMockResponse() {
   };
 }
 
-function createChatService(model: ReturnType<typeof createScriptedModel>['model']) {
+function configStub(
+  values: Record<string, string | undefined> = {},
+): ConfigService {
+  return {
+    get: (key: string) => values[key],
+  } as unknown as ConfigService;
+}
+
+function createChatService(
+  model: ReturnType<typeof createScriptedModel>['model'],
+) {
   const store = new InMemoryConversationStore();
   const orders = new OrdersService();
   const modelService = {
@@ -55,12 +67,13 @@ function createChatService(model: ReturnType<typeof createScriptedModel>['model'
     modelService,
     new OrderLookupTool(orders),
     new ListOrdersTool(orders),
+    new CancelOrderTool(orders),
   );
   const agents = new AgentRegistry(assistant);
 
   return {
     store,
-    service: new ChatService(agents, store),
+    service: new ChatService(agents, store, configStub()),
   };
 }
 
@@ -77,7 +90,7 @@ describe('ChatService', () => {
     const { response, body } = createMockResponse();
 
     await service.streamChat({
-      ctx: { userId: 'demo-user' },
+      ctx: { userId: 'demo-user', requestId: 'test' },
       messages: [userMessage('hello')],
       response,
       abortSignal: new AbortController().signal,
@@ -94,8 +107,10 @@ describe('ChatService', () => {
     const { response } = createMockResponse();
 
     await service.streamChat({
-      ctx: { userId: 'demo-user' },
-      messages: [{ role: 'user', parts: [{ type: 'text', text: 'hello' }] } as UIMessage],
+      ctx: { userId: 'demo-user', requestId: 'test' },
+      messages: [
+        { role: 'user', parts: [{ type: 'text', text: 'hello' }] } as UIMessage,
+      ],
       conversationId: 'conv-1',
       response,
       abortSignal: new AbortController().signal,
@@ -115,7 +130,7 @@ describe('ChatService', () => {
     const { response } = createMockResponse();
 
     await service.streamChat({
-      ctx: { userId: 'user-a' },
+      ctx: { userId: 'user-a', requestId: 'test' },
       messages: [userMessage('private')],
       conversationId: 'shared-id',
       response,
@@ -136,9 +151,11 @@ describe('ChatService', () => {
           { getModel: () => model } as unknown as ModelService,
           new OrderLookupTool(orders),
           new ListOrdersTool(orders),
+          new CancelOrderTool(orders),
         ),
       ),
       store,
+      configStub(),
     );
 
     const messages: UIMessage[] = [userMessage('saved')];
@@ -157,7 +174,7 @@ describe('ChatService', () => {
 
     await expect(
       service.streamChat({
-        ctx: { userId: 'demo-user' },
+        ctx: { userId: 'demo-user', requestId: 'test' },
         messages: [userMessage('hello')],
         agentId: 'missing-agent',
         response,
@@ -181,7 +198,7 @@ describe('ChatService', () => {
 
     await service
       .streamChat({
-        ctx: { userId: 'demo-user' },
+        ctx: { userId: 'demo-user', requestId: 'test' },
         messages: [userMessage('abort me')],
         conversationId: 'aborted',
         response,

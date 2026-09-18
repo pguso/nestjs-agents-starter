@@ -42,6 +42,10 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# sample UI
+examples/chat-ui/node_modules
+examples/chat-ui/dist
+
 # temp
 *.tsbuildinfo
 .turbo

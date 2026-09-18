@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req, Res } from '@nestjs/common';
 import {
   ApiBody,
   ApiOkResponse,
@@ -16,6 +8,7 @@ import {
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import { CurrentContext } from '../common/request-context.decorator.js';
 import type { RequestContext } from '../common/request-context.js';
@@ -29,13 +22,15 @@ export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('chat')
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @ApiOperation({
     summary: 'Stream a chat turn with the assistant agent',
     description: [
       'Streams the AI SDK UI message protocol via `pipeAgentUIStreamToResponse`.',
-      'Swagger Try it out cannot usefully play this stream - use curl (`curl -N`) or a React `useChat` transport pointed at this URL.',
+      'Swagger Try it out cannot usefully play this stream - use curl (`curl -N`) or a React `useChat` transport.',
       'Optional `conversationId` persists the finished message list through `ConversationStore` (scoped to the current user).',
       'Optional `agentId` selects an agent from `AgentRegistry` (default `assistant`).',
+      'Rate-limited more tightly than the global default (20 requests / minute).',
     ].join(' '),
   })
   @ApiBody({ type: ChatRequestDto })

@@ -4,6 +4,7 @@ import { AgentRegistry } from './agent.registry.js';
 import { AssistantAgent } from './assistant.agent.js';
 import type { NestAgent } from './agent.js';
 import type { ModelService } from '../model/model.service.js';
+import { CancelOrderTool } from '../tools/cancel-order.tool.js';
 import { OrderLookupTool } from '../tools/order-lookup.tool.js';
 import { ListOrdersTool } from '../tools/list-orders.tool.js';
 import { OrdersService } from '../tools/orders.service.js';
@@ -16,6 +17,7 @@ function createAssistant() {
     { getModel: () => model } as unknown as ModelService,
     new OrderLookupTool(orders),
     new ListOrdersTool(orders),
+    new CancelOrderTool(orders),
   );
 }
 

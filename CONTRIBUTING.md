@@ -16,10 +16,13 @@ Use Node from [`.nvmrc`](.nvmrc) (Node 20+).
 
 ```bash
 npm run lint
+npm run format:check
 npm run build
 npm test
 npm run test:e2e
 ```
+
+Or simply `npm run check`.
 
 ## Tests
 

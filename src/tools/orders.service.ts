@@ -3,7 +3,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 export interface Order {
   id: string;
   userId: string;
-  status: 'pending' | 'shipped' | 'delivered';
+  status: 'pending' | 'shipped' | 'delivered' | 'cancelled';
   totalCents: number;
   items: string[];
 }
@@ -35,7 +35,9 @@ export class OrdersService {
   ];
 
   findForUser(userId: string, orderId: string): Order {
-    const order = this.orders.find((o) => o.id === orderId && o.userId === userId);
+    const order = this.orders.find(
+      (o) => o.id === orderId && o.userId === userId,
+    );
     if (!order) {
       throw new NotFoundException(
         `Order ${orderId} was not found for the current user`,
@@ -46,5 +48,20 @@ export class OrdersService {
 
   listForUser(userId: string): Order[] {
     return this.orders.filter((o) => o.userId === userId);
+  }
+
+  /**
+   * Cancels a pending order owned by the user.
+   * Intended for the human-in-the-loop `cancelOrder` tool.
+   */
+  cancelForUser(userId: string, orderId: string): Order {
+    const order = this.findForUser(userId, orderId);
+    if (order.status !== 'pending') {
+      throw new NotFoundException(
+        `Order ${orderId} cannot be cancelled (status: ${order.status})`,
+      );
+    }
+    order.status = 'cancelled';
+    return order;
   }
 }

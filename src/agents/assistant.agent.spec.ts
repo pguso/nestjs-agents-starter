@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AssistantAgent } from './assistant.agent.js';
+import { CancelOrderTool } from '../tools/cancel-order.tool.js';
 import { OrderLookupTool } from '../tools/order-lookup.tool.js';
 import { ListOrdersTool } from '../tools/list-orders.tool.js';
 import { OrdersService } from '../tools/orders.service.js';
@@ -10,8 +11,10 @@ import {
   toolOutputs,
 } from '../testing/mock-language-model.js';
 
-function createAgent(model: ReturnType<typeof createScriptedModel>['model']) {
-  const orders = new OrdersService();
+function createAgent(
+  model: ReturnType<typeof createScriptedModel>['model'],
+  orders = new OrdersService(),
+) {
   const modelService = {
     getModel: () => model,
   } as unknown as ModelService;
@@ -20,7 +23,8 @@ function createAgent(model: ReturnType<typeof createScriptedModel>['model']) {
     modelService,
     new OrderLookupTool(orders),
     new ListOrdersTool(orders),
-  ).create({ userId: 'demo-user' }, model);
+    new CancelOrderTool(orders),
+  ).create({ userId: 'demo-user', requestId: 'test' }, model);
 }
 
 describe('AssistantAgent', () => {
@@ -96,6 +100,36 @@ describe('AssistantAgent', () => {
       /not found/i,
     );
     expect(toolOutputs(result)).toEqual([]);
+  });
+
+  it('requests approval for cancelOrder instead of executing immediately', async () => {
+    const orders = new OrdersService();
+    const { model } = createScriptedModel([
+      [
+        {
+          toolCallId: 'call-1',
+          toolName: 'cancelOrder',
+          input: { orderId: 'ord_1002' },
+        },
+      ],
+      'stop',
+    ]);
+
+    const result = await createAgent(model, orders).generate({
+      prompt: 'Cancel order ord_1002',
+    });
+
+    expect(toolOutputs(result)).toEqual([]);
+    expect(orders.findForUser('demo-user', 'ord_1002').status).toBe('pending');
+    expect(
+      result.content.some(
+        (part) =>
+          typeof part === 'object' &&
+          part !== null &&
+          'type' in part &&
+          (part as { type: string }).type === 'tool-approval-request',
+      ),
+    ).toBe(true);
   });
 
   it('stops after the step budget instead of looping forever', async () => {

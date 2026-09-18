@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
+import helmet from 'helmet';
 import { AppModule } from './app.module.js';
 
 function corsOriginOption(): boolean | string[] {
@@ -16,8 +18,16 @@ function corsOriginOption(): boolean | string[] {
   return process.env.NODE_ENV === 'production' ? false : true;
 }
 
+function bodySizeLimit(): string {
+  return process.env.BODY_SIZE_LIMIT?.trim() || '256kb';
+}
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  app.use(helmet());
+  app.use(json({ limit: bodySizeLimit() }));
+  app.use(urlencoded({ extended: true, limit: bodySizeLimit() }));
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

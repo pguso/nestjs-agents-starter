@@ -7,10 +7,17 @@ describe('OrderLookupTool', () => {
   const toolProvider = new OrderLookupTool(orders);
 
   it('returns the order for the current user', async () => {
-    const built = toolProvider.build({ userId: 'demo-user' });
+    const built = toolProvider.build({
+      userId: 'demo-user',
+      requestId: 'test',
+    });
     const result = await built.execute!(
       { orderId: 'ord_1001' },
-      { toolCallId: 't1', messages: [], abortSignal: new AbortController().signal },
+      {
+        toolCallId: 't1',
+        messages: [],
+        abortSignal: new AbortController().signal,
+      },
     );
 
     expect(result).toMatchObject({
@@ -20,7 +27,10 @@ describe('OrderLookupTool', () => {
   });
 
   it("does not return another user's order", async () => {
-    const built = toolProvider.build({ userId: 'demo-user' });
+    const built = toolProvider.build({
+      userId: 'demo-user',
+      requestId: 'test',
+    });
 
     await expect(
       built.execute!(

@@ -1,0 +1,143 @@
+:root {
+  color-scheme: light;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  line-height: 1.45;
+  color: #1a1f24;
+  background: #f3efe6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+header h1 {
+  margin: 0;
+  font-family: 'IBM Plex Serif', Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+header p {
+  margin: 0.35rem 0 0;
+  color: #4a5560;
+  font-size: 0.95rem;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: #5a6570;
+}
+
+.messages {
+  display: grid;
+  gap: 0.85rem;
+  min-height: 12rem;
+}
+
+.bubble {
+  padding: 0.85rem 1rem;
+  border-radius: 0.35rem;
+  background: #fff;
+  border: 1px solid #d8d0c2;
+}
+
+.bubble.user {
+  background: #e7f0ea;
+  border-color: #b7cfc0;
+}
+
+.bubble .role {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7580;
+  margin-bottom: 0.35rem;
+}
+
+.approval {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #cfc5b4;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.approval strong {
+  font-size: 0.9rem;
+}
+
+.approval-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  border: 1px solid #2f3a33;
+  background: #2f3a33;
+  color: #f7f3ea;
+  border-radius: 0.3rem;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: transparent;
+  color: #2f3a33;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+
+input[type='text'] {
+  border: 1px solid #cfc5b4;
+  border-radius: 0.3rem;
+  padding: 0.65rem 0.75rem;
+  background: #fff;
+}
+
+.status {
+  font-size: 0.85rem;
+  color: #5a6570;
+}
+
+pre.tool {
+  margin: 0.4rem 0 0;
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+  background: #f7f3ea;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+}

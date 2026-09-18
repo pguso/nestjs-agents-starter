@@ -1,60 +1,65 @@
 # Lesson 4 - React frontend
 
-This repo is backend-only. A React (or Next.js) app should treat Nest as a remote API: stream chat with the AI SDK, load history with ordinary `fetch`, and use OpenAPI only where it helps.
+Use the sample app under [`examples/chat-ui`](../../examples/chat-ui) for a working Vite + `useChat` client, or follow the notes below to wire your own UI.
 
 ## Prerequisites on the Nest side
 
 Already configured in [`main.ts`](../../src/main.ts):
 
-- CORS via `CORS_ORIGINS` (comma-separated). Unset allows all origins in non-production; set an explicit list before production.
+- CORS via `CORS_ORIGINS` (comma-separated). Unset allows all origins in non-production; set `http://localhost:5173` when using the sample UI with a locked-down CORS list.
+- Helmet + body size limits (`BODY_SIZE_LIMIT`, default `256kb`).
 - Swagger at `/docs` for humans exploring REST.
 - Global auth: `AUTH_MODE=dev` uses `x-user-id` (default `demo-user`); `AUTH_MODE=jwt` expects a Bearer token (see [`AuthGuard`](../../src/common/auth.guard.ts)).
+- Rate limiting via `@nestjs/throttler` (`POST /chat` is capped at 20/min).
+
+## Sample app (recommended)
+
+```bash
+# terminal 1 - API
+npm run start:dev
+
+# terminal 2 - UI
+cd examples/chat-ui
+npm install
+npm run dev
+```
+
+Open http://localhost:5173. See [`examples/chat-ui/README.md`](../../examples/chat-ui/README.md).
 
 ## Chat: use AI SDK `useChat`, not Swagger
 
-`POST /chat` speaks the AI SDK UI message stream. In the frontend:
-
-```bash
-npm install ai @ai-sdk/react
-```
-
-Point the transport at your Nest URL (adjust for your AI SDK 6 transport API):
+`POST /chat` speaks the AI SDK UI message stream:
 
 ```tsx
-'use client';
-
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithApprovalResponses,
+} from 'ai';
 
 const transport = new DefaultChatTransport({
   api: 'http://localhost:3000/chat',
-  headers: {
-    'x-user-id': 'demo-user', // replace with real auth later
-  },
+  headers: { 'x-user-id': 'demo-user' },
 });
 
-export function Chat() {
-  const { messages, sendMessage, status } = useChat({ transport });
-
-  // render messages; sendMessage({ text: '...' }) on submit
-  return null;
-}
+const { messages, sendMessage, addToolApprovalResponse, status } = useChat({
+  transport,
+  sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithApprovalResponses,
+});
 ```
 
-If you persist turns, pass a stable `conversationId` in the request body (extend the transport / prepare-request hook your AI SDK version provides) so Nest can `save` via `ConversationStore`.
+### Rendering tool parts and approvals
 
-### Rendering tool parts
-
-Tool results arrive as message **parts**, not only as plain assistant text. Prefer dedicated UI:
+Tool results arrive as message **parts**. Prefer dedicated UI:
 
 - order lookup → table or detail card
-- destructive tools → confirm / reject controls before or after the tool call, depending on your product rules
+- **`cancelOrder`** → Approve / Reject controls (`needsApproval: true` on the Nest tool)
+
+When the model requests cancellation, the stream includes a `tool-approval-request`. Call `addToolApprovalResponse({ id, approved })` so the agent can continue (or stop if rejected). The sample app implements this end-to-end.
 
 Do not dump raw JSON into the bubble unless you are debugging.
 
 ## History: `GET /conversations/:id`
-
-Load prior messages with normal HTTP:
 
 ```ts
 const res = await fetch(
@@ -64,8 +69,6 @@ const res = await fetch(
 const messages = await res.json(); // UIMessage[]
 ```
 
-Seed `useChat` with those messages (initial messages / controlled state - follow the AI SDK version you pin). This endpoint is the one that works cleanly in Swagger Try it out.
-
 ## Auth header today vs production
 
 | Environment | Client sends | Nest does |
@@ -73,36 +76,17 @@ Seed `useChat` with those messages (initial messages / controlled state - follow
 | Dev (this template) | Optional `x-user-id` | Defaults to `demo-user` |
 | Production | `Authorization: Bearer …` (or cookies) | Replace `AuthGuard`; still set `RequestContext` |
 
-Keep the frontend and Swagger security scheme in sync when you change auth ([`main.ts`](../../src/main.ts) `addApiKey` / later `addBearerAuth`).
-
 ## When to use OpenAPI codegen
 
-Useful for:
+Useful for typed REST clients (`GET /conversations/:id`). Not useful as the primary chat client - generated wrappers expect finite JSON, not the AI SDK UI stream.
 
-- typed clients for future CRUD REST modules
-- generating types for `GET /conversations/:id` if you want them
-
-Not useful as the primary chat client:
-
-- generated `fetch` wrappers expect finite JSON responses
-- they will not implement the AI SDK UI stream protocol
-
-Practical split:
-
-```text
-React UI  --useChat transport-->  POST /chat          (stream)
-React UI  --fetch / openapi---->  GET /conversations  (JSON)
-Humans    --browser------------>  GET /docs           (Swagger UI)
-```
-
-## Checklist for a new React feature against this API
+## Checklist
 
 1. Decide stream vs JSON.
-2. If stream → AI SDK hook + transport + `x-user-id` (or real auth).
-3. If JSON → `fetch` or generated OpenAPI client; document the Nest route with `@Api*` ([Lesson 3](./03-swagger-openapi.md)).
-4. Render tool parts intentionally.
-5. Tighten CORS and auth before deploying.
+2. If stream → AI SDK hook + transport + identity header.
+3. If a write tool needs approval → render Approve/Reject and call `addToolApprovalResponse`.
+4. Tighten CORS, auth, and body limits before deploying.
 
 ## Takeaway
 
-Connect React to Nest the same way the layers are split: streaming chat through the AI SDK, REST through ordinary HTTP (and optionally OpenAPI), identity through headers that populate `RequestContext`.
+Streaming chat through the AI SDK, REST through ordinary HTTP, identity through headers that populate `RequestContext`, and destructive tools behind human approval.

@@ -17,37 +17,49 @@ function createHttpContext(headers: Record<string, string | undefined>) {
     Object.entries(headers).map(([key, value]) => [key.toLowerCase(), value]),
   );
 
+  const responseHeaders: Record<string, string> = {};
   const request: Record<string | symbol, unknown> = {
     header: (name: string) => normalized[name.toLowerCase()],
+  };
+  const response = {
+    setHeader: (name: string, value: string) => {
+      responseHeaders[name.toLowerCase()] = value;
+    },
   };
 
   const context = {
     switchToHttp: () => ({
       getRequest: () => request,
+      getResponse: () => response,
     }),
   } as unknown as ExecutionContext;
 
-  return { context, request };
+  return { context, request, responseHeaders };
 }
 
 describe('AuthGuard', () => {
   it('defaults to demo-user when x-user-id is missing in dev mode', () => {
     const guard = new AuthGuard(configWith({ AUTH_MODE: 'dev' }));
-    const { context, request } = createHttpContext({});
+    const { context, request, responseHeaders } = createHttpContext({});
 
     expect(guard.canActivate(context)).toBe(true);
-    expect(request[REQUEST_CONTEXT_KEY]).toEqual({
-      userId: 'demo-user',
-    } satisfies RequestContext);
+    const ctx = request[REQUEST_CONTEXT_KEY] as RequestContext;
+    expect(ctx.userId).toBe('demo-user');
+    expect(ctx.requestId).toBeTruthy();
+    expect(responseHeaders['x-request-id']).toBe(ctx.requestId);
   });
 
-  it('uses the x-user-id header when present in dev mode', () => {
+  it('uses the x-user-id and x-request-id headers when present', () => {
     const guard = new AuthGuard(configWith({ AUTH_MODE: 'dev' }));
-    const { context, request } = createHttpContext({ 'x-user-id': '  alice  ' });
+    const { context, request } = createHttpContext({
+      'x-user-id': '  alice  ',
+      'x-request-id': 'req-123',
+    });
 
     expect(guard.canActivate(context)).toBe(true);
     expect(request[REQUEST_CONTEXT_KEY]).toEqual({
       userId: 'alice',
+      requestId: 'req-123',
     } satisfies RequestContext);
   });
 
@@ -56,7 +68,9 @@ describe('AuthGuard', () => {
     const { context, request } = createHttpContext({ 'x-user-id': '   ' });
 
     expect(guard.canActivate(context)).toBe(true);
-    expect(request[REQUEST_CONTEXT_KEY]).toEqual({ userId: 'demo-user' });
+    expect((request[REQUEST_CONTEXT_KEY] as RequestContext).userId).toBe(
+      'demo-user',
+    );
   });
 
   it('rejects missing Bearer token when AUTH_MODE=jwt', () => {
@@ -68,9 +82,9 @@ describe('AuthGuard', () => {
 
   it('reads sub from an unsigned JWT payload when AUTH_MODE=jwt', () => {
     const guard = new AuthGuard(configWith({ AUTH_MODE: 'jwt' }));
-    const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString(
-      'base64url',
-    );
+    const header = Buffer.from(
+      JSON.stringify({ alg: 'none', typ: 'JWT' }),
+    ).toString('base64url');
     const payload = Buffer.from(JSON.stringify({ sub: 'jwt-user' })).toString(
       'base64url',
     );
@@ -79,6 +93,8 @@ describe('AuthGuard', () => {
     });
 
     expect(guard.canActivate(context)).toBe(true);
-    expect(request[REQUEST_CONTEXT_KEY]).toEqual({ userId: 'jwt-user' });
+    expect((request[REQUEST_CONTEXT_KEY] as RequestContext).userId).toBe(
+      'jwt-user',
+    );
   });
 });

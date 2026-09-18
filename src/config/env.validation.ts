@@ -25,6 +25,10 @@ export function validateEnv(config: Record<string, unknown>) {
       OLLAMA_API_KEY: z.string().optional(),
       AUTH_MODE: authModeSchema.default('dev'),
       CORS_ORIGINS: z.string().optional(),
+      BODY_SIZE_LIMIT: z.string().optional(),
+      THROTTLE_TTL_MS: z.string().optional(),
+      THROTTLE_LIMIT: z.string().optional(),
+      AGENT_METRICS_LOG: z.string().optional(),
     })
     .superRefine((data, ctx) => {
       if (isTest) {

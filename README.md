@@ -130,16 +130,24 @@ Messages are stored through a `ConversationStore` interface keyed by **`(userId,
 
 ## Frontend
 
-The `/chat` endpoint speaks the AI SDK UI message stream protocol, so a React app can talk to it with `useChat` and a transport pointed at your API. Tool calls come through as message parts, which means you can render them properly (a table for an order lookup, an approve/reject button for anything that changes data) instead of dumping JSON into the chat. See [docs/lessons/04-react-frontend.md](docs/lessons/04-react-frontend.md) for headers, history loading, and how OpenAPI fits beside `useChat`.
+A minimal Vite + React + `useChat` client lives in [`examples/chat-ui`](examples/chat-ui). It streams against `POST /chat` and shows Approve/Reject for the `cancelOrder` tool.
+
+```bash
+cd examples/chat-ui && npm install && npm run dev
+```
+
+The `/chat` endpoint speaks the AI SDK UI message stream protocol. See [docs/lessons/04-react-frontend.md](docs/lessons/04-react-frontend.md).
 
 ## Tests
 
 ```bash
 npm test
 npm run test:e2e
+# optional live provider smoke (needs real keys / Ollama):
+LIVE_LLM_TEST=1 npm run test:live
 ```
 
-Or `npm run check` for lint + unit + e2e + build.
+Or `npm run check` for lint + format check + unit + e2e + build.
 
 Tests follow the Chicago/Detroit (classicist) school: real collaborators, doubles only at the LLM boundary, and assertions on observable outcomes (tool results, store contents, HTTP)-not model wording or internal spies. See [docs/testing.md](docs/testing.md) for principles, the behavior inventory, and how to mock the model in agent and e2e specs.
 

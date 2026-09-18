@@ -5,10 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { Request } from 'express';
-import {
-  REQUEST_CONTEXT_KEY,
-} from './request-context.decorator.js';
+import { randomUUID } from 'node:crypto';
+import type { Request, Response } from 'express';
+import { REQUEST_CONTEXT_KEY } from './request-context.decorator.js';
 import type { RequestContext } from './request-context.js';
 
 /**
@@ -18,19 +17,30 @@ import type { RequestContext } from './request-context.js';
  * - AUTH_MODE=jwt: requires `Authorization: Bearer <token>` and reads `sub`
  *   from an unsigned JSON payload (base64url). Replace with real JWT/JWKS
  *   validation before production.
+ *
+ * Always attaches a `requestId` (from `x-request-id` or a new UUID) on the
+ * context and response header for log correlation.
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private readonly config: ConfigService) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest<Request>();
+    const http = context.switchToHttp();
+    const request = http.getRequest<Request>();
+    const response = http.getResponse<Response>();
     const mode = (this.config.get<string>('AUTH_MODE') ?? 'dev').toLowerCase();
+    const requestId = request.header('x-request-id')?.trim() || randomUUID();
 
-    const ctx: RequestContext =
-      mode === 'jwt'
-        ? { userId: this.userIdFromBearer(request) }
-        : { userId: this.userIdFromDevHeader(request) };
+    response.setHeader('x-request-id', requestId);
+
+    const ctx: RequestContext = {
+      requestId,
+      userId:
+        mode === 'jwt'
+          ? this.userIdFromBearer(request)
+          : this.userIdFromDevHeader(request),
+    };
 
     (request as Request & { [REQUEST_CONTEXT_KEY]: RequestContext })[
       REQUEST_CONTEXT_KEY

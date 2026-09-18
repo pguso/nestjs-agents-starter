@@ -49,6 +49,23 @@ describe('OrdersService', () => {
     ]);
   });
 
+  it('cancels a pending order for the current user', () => {
+    const orders = new OrdersService();
+    expect(orders.cancelForUser('demo-user', 'ord_1002').status).toBe(
+      'cancelled',
+    );
+    expect(orders.findForUser('demo-user', 'ord_1002').status).toBe(
+      'cancelled',
+    );
+  });
+
+  it('refuses to cancel a non-pending order', () => {
+    const orders = new OrdersService();
+    expect(() => orders.cancelForUser('demo-user', 'ord_1001')).toThrow(
+      /cannot be cancelled/,
+    );
+  });
+
   it('keeps seed data local to each instance', () => {
     const a = new OrdersService();
     const b = new OrdersService();

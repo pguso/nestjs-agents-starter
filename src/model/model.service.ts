@@ -21,7 +21,9 @@ export class ModelService {
       case 'anthropic': {
         const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
         if (!apiKey) {
-          throw new Error('ANTHROPIC_API_KEY is required when AI_PROVIDER=anthropic');
+          throw new Error(
+            'ANTHROPIC_API_KEY is required when AI_PROVIDER=anthropic',
+          );
         }
         return createAnthropic({ apiKey })(modelId);
       }

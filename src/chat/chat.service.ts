@@ -1,10 +1,7 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
-import {
-  generateId,
-  pipeAgentUIStreamToResponse,
-  type UIMessage,
-} from 'ai';
+import { generateId, pipeAgentUIStreamToResponse, type UIMessage } from 'ai';
 import type { RequestContext } from '../common/request-context.js';
 import { AgentRegistry, DEFAULT_AGENT_ID } from '../agents/agent.registry.js';
 import {
@@ -18,12 +15,22 @@ function ensureMessageIds(messages: UIMessage[]): UIMessage[] {
   );
 }
 
+function truthyEnv(value: string | undefined): boolean {
+  if (!value) {
+    return false;
+  }
+  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
+}
+
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
     private readonly agents: AgentRegistry,
     @Inject(CONVERSATION_STORE)
     private readonly conversations: ConversationStore,
+    private readonly config: ConfigService,
   ) {}
 
   async streamChat(params: {
@@ -44,17 +51,55 @@ export class ChatService {
     } = params;
     const agent = this.agents.get(agentId).create(ctx);
     const uiMessages = ensureMessageIds(messages);
+    const logMetrics = truthyEnv(this.config.get<string>('AGENT_METRICS_LOG'));
 
     await pipeAgentUIStreamToResponse({
       response,
       agent,
       uiMessages,
       abortSignal,
-      onFinish: async ({ messages: finalMessages }) => {
+      onStepFinish: async (step) => {
+        if (!logMetrics) {
+          return;
+        }
+        this.logger.log(
+          JSON.stringify({
+            msg: 'agent.step',
+            requestId: ctx.requestId,
+            userId: ctx.userId,
+            agentId,
+            finishReason: step.finishReason,
+            usage: step.usage,
+          }),
+        );
+      },
+      onFinish: async ({
+        messages: finalMessages,
+        isAborted,
+        finishReason,
+      }) => {
+        if (logMetrics) {
+          this.logger.log(
+            JSON.stringify({
+              msg: 'agent.finish',
+              requestId: ctx.requestId,
+              userId: ctx.userId,
+              agentId,
+              isAborted,
+              finishReason,
+              messageCount: finalMessages.length,
+            }),
+          );
+        }
+
         if (!conversationId) {
           return;
         }
-        await this.conversations.save(ctx.userId, conversationId, finalMessages);
+        await this.conversations.save(
+          ctx.userId,
+          conversationId,
+          finalMessages,
+        );
       },
     });
   }
