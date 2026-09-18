@@ -33,6 +33,8 @@ Then start the dev server:
 npm run start:dev
 ```
 
+OpenAPI docs are at [http://localhost:3000/docs](http://localhost:3000/docs). `POST /chat` is a stream (use curl or a React `useChat` client for that); `GET /conversations/:id` works well from Swagger Try it out. Short lessons on structure, features, Swagger, and React live in [docs/lessons](docs/lessons).
+
 Send a message to the example agent:
 
 ```bash
@@ -88,7 +90,7 @@ Messages are stored through a `ConversationStore` interface. The default impleme
 
 ## Frontend
 
-The `/chat` endpoint speaks the AI SDK UI message stream protocol, so a React app can talk to it with `useChat` and a transport pointed at your API. Tool calls come through as message parts, which means you can render them properly (a table for an order lookup, an approve/reject button for anything that changes data) instead of dumping JSON into the chat.
+The `/chat` endpoint speaks the AI SDK UI message stream protocol, so a React app can talk to it with `useChat` and a transport pointed at your API. Tool calls come through as message parts, which means you can render them properly (a table for an order lookup, an approve/reject button for anything that changes data) instead of dumping JSON into the chat. See [docs/lessons/04-react-frontend.md](docs/lessons/04-react-frontend.md) for headers, history loading, and how OpenAPI fits beside `useChat`.
 
 ## Tests
 

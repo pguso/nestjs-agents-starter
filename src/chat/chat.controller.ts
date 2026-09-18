@@ -7,17 +7,38 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
+import {
+  ApiBody,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiProduces,
+  ApiSecurity,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { CurrentContext } from '../common/request-context.decorator.js';
 import type { RequestContext } from '../common/request-context.js';
-import { ChatRequestDto } from './chat.dto.js';
+import { ChatRequestDto, UiMessageDto } from './chat.dto.js';
 import { ChatService } from './chat.service.js';
 
+@ApiTags('chat')
+@ApiSecurity('x-user-id')
 @Controller()
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
   @Post('chat')
+  @ApiOperation({
+    summary: 'Stream a chat turn with the assistant agent',
+    description: [
+      'Streams the AI SDK UI message protocol via `pipeAgentUIStreamToResponse`.',
+      'Swagger Try it out cannot usefully play this stream — use curl (`curl -N`) or a React `useChat` transport pointed at this URL.',
+      'Optional `conversationId` persists the finished message list through `ConversationStore`.',
+    ].join(' '),
+  })
+  @ApiBody({ type: ChatRequestDto })
+  @ApiProduces('text/plain')
   async chat(
     @Body() body: ChatRequestDto,
     @CurrentContext() ctx: RequestContext,
@@ -42,6 +63,16 @@ export class ChatController {
   }
 
   @Get('conversations/:id')
+  @ApiOperation({
+    summary: 'Load a stored conversation',
+    description:
+      'Returns the message list saved for `id`, or an empty array if nothing was stored. Suitable for Swagger Try it out.',
+  })
+  @ApiParam({ name: 'id', example: 'conv_123' })
+  @ApiOkResponse({
+    description: 'Stored AI SDK UI messages (empty array when missing).',
+    type: [UiMessageDto],
+  })
   async getConversation(@Param('id') id: string) {
     return this.chatService.loadConversation(id);
   }
