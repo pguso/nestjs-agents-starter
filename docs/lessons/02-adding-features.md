@@ -17,6 +17,8 @@ Checklist:
 
 Do **not** register tools on a global map that every agent can reach. Explicit wiring is how you avoid accidental privilege.
 
+If the tool is user-facing, update the sample UI (or your own client) next: at minimum it will show as a JSON tool card; optionally add empty-state suggestions, a dedicated result renderer, or `needsApproval` + Approve/Reject. See [Lesson 4](./04-react-frontend.md#how-to-design-and-wire-a-new-capability).
+
 ## Add an agent
 
 1. Copy [`assistant.agent.ts`](../../src/agents/assistant.agent.ts).

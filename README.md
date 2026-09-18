@@ -130,13 +130,13 @@ Messages are stored through a `ConversationStore` interface keyed by **`(userId,
 
 ## Frontend
 
-A minimal Vite + React + `useChat` client lives in [`examples/chat-ui`](examples/chat-ui). It streams against `POST /chat` and shows Approve/Reject for the `cancelOrder` tool.
+A Vite + React + `useChat` client lives in [`examples/chat-ui`](examples/chat-ui). It streams against `POST /chat`, renders tool calls as cards rather than raw JSON, and shows Approve/Reject for the `cancelOrder` tool. Plain CSS, no UI library, so it is easy to strip down or copy from.
 
 ```bash
 cd examples/chat-ui && npm install && npm run dev
 ```
 
-The `/chat` endpoint speaks the AI SDK UI message stream protocol. See [docs/lessons/04-react-frontend.md](docs/lessons/04-react-frontend.md).
+The `/chat` endpoint speaks the AI SDK UI message stream protocol. [Lesson 4](docs/lessons/04-react-frontend.md) explains the UI elements, why they are split that way, and how to wire new Nest tools into cards, approvals, and empty-state suggestions.
 
 ## Tests
 

@@ -7,7 +7,7 @@ Short lessons for this NestJS agents starter: how the project is structured, how
 1. [Project structure](./01-project-structure.md) - layers, ownership, request path
 2. [Adding features](./02-adding-features.md) - tools, agents, HTTP endpoints, stores
 3. [Swagger / OpenAPI](./03-swagger-openapi.md) - documenting the API, streaming limits
-4. [React frontend](./04-react-frontend.md) - `useChat`, history, headers, when to use OpenAPI clients
+4. [React frontend](./04-react-frontend.md) - UI elements, design choices, `useChat` wiring, tool cards / approvals, extending for new tools
 
 Also see [Deployment](../deployment.md) for production env, Docker, auth/CORS, and streaming proxies.
 

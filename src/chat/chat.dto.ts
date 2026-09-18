@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsIn, IsOptional, IsString } from 'class-validator';
 import type { UIMessage } from 'ai';
 
 /**
@@ -56,4 +56,33 @@ export class ChatRequestDto {
   @IsOptional()
   @IsString()
   agentId?: string;
+
+  /**
+   * Sent by AI SDK `DefaultChatTransport` / `useChat`. Accepted so
+   * `forbidNonWhitelisted` does not reject the client; not used by the server.
+   */
+  @ApiPropertyOptional({
+    description: 'AI SDK chat id (`useChat` / DefaultChatTransport).',
+    example: 'chat_abc',
+  })
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'AI SDK request trigger (`submit-message` or `regenerate-message`).',
+    enum: ['submit-message', 'regenerate-message'],
+  })
+  @IsOptional()
+  @IsIn(['submit-message', 'regenerate-message'])
+  trigger?: 'submit-message' | 'regenerate-message';
+
+  @ApiPropertyOptional({
+    description:
+      'AI SDK message id when regenerating (`regenerate-message` trigger).',
+  })
+  @IsOptional()
+  @IsString()
+  messageId?: string;
 }

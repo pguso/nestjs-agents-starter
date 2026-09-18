@@ -132,6 +132,43 @@ describe('AssistantAgent', () => {
     ).toBe(true);
   });
 
+  it('lists orders then requests approval for cancel in a compound turn', async () => {
+    const orders = new OrdersService();
+    const { model } = createScriptedModel([
+      [{ toolCallId: 'call-1', toolName: 'listOrders', input: {} }],
+      [
+        {
+          toolCallId: 'call-2',
+          toolName: 'cancelOrder',
+          input: { orderId: 'ord_1002' },
+        },
+      ],
+      'stop',
+    ]);
+
+    const result = await createAgent(model, orders).generate({
+      prompt: 'Show my orders, then cancel ord_1002',
+    });
+
+    expect(toolOutputs(result)).toContainEqual({
+      toolName: 'listOrders',
+      output: [
+        { id: 'ord_1001', status: 'shipped', totalCents: 4299 },
+        { id: 'ord_1002', status: 'pending', totalCents: 1999 },
+      ],
+    });
+    expect(orders.findForUser('demo-user', 'ord_1002').status).toBe('pending');
+    expect(
+      result.content.some(
+        (part) =>
+          typeof part === 'object' &&
+          part !== null &&
+          'type' in part &&
+          (part as { type: string }).type === 'tool-approval-request',
+      ),
+    ).toBe(true);
+  });
+
   it('stops after the step budget instead of looping forever', async () => {
     const { model, getCallCount } = createScriptedModel(
       Array.from({ length: 20 }, (_, i) => [

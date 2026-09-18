@@ -81,6 +81,26 @@ describe('Chat (e2e)', () => {
     expect(res.text.length).toBeGreaterThan(0);
   });
 
+  it('POST /chat accepts AI SDK DefaultChatTransport fields (id, trigger)', async () => {
+    const { model } = createScriptedModel(['stop']);
+    await bootWithModel(model);
+
+    await request(app.getHttpServer())
+      .post('/chat')
+      .send({
+        id: 'chat_ui_1',
+        trigger: 'submit-message',
+        messages: [
+          {
+            id: '1',
+            role: 'user',
+            parts: [{ type: 'text', text: 'Hello' }],
+          },
+        ],
+      })
+      .expect(200);
+  });
+
   it('POST /chat with conversationId persists messages for GET', async () => {
     const { model } = createScriptedModel(['stop']);
     await bootWithModel(model);

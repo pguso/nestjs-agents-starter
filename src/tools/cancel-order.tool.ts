@@ -16,7 +16,7 @@ export class CancelOrderTool {
   build(ctx: RequestContext) {
     return tool({
       description:
-        "Cancel one of the current user's pending orders. Requires explicit user approval before it runs.",
+        "Cancel one of the current user's pending orders. Call this as soon as the user asks to cancel; the UI will pause for Approve/Reject before execute runs.",
       inputSchema: z.object({
         orderId: z.string().describe('The pending order id to cancel'),
       }),
