@@ -125,34 +125,7 @@ src/
 
 The split is deliberate. An agent file says what the agent is for, which model it uses and which tools it gets, then returns a `ToolLoopAgent` - nothing more. It never sees Express or `@Res()`. The chat module owns HTTP streaming and persistence but not what any particular agent does. Tools stay thin wrappers over domain services (e.g. `orders/`). When something breaks, it's usually obvious which folder to look at.
 
-## Writing a tool
-
-Tools are Nest providers, so they can inject whatever they need. The one rule: tools get built per request, with the request context passed in, so they can never act on behalf of someone other than the current user.
-
-```ts
-@Injectable()
-export class OrderLookupTool {
-  constructor(private readonly orders: OrdersService) {}
-
-  build(ctx: RequestContext) {
-    return tool({
-      description: 'Look up one of the current user\'s orders by id',
-      inputSchema: z.object({ orderId: z.string() }),
-      execute: ({ orderId }) => this.orders.findForUser(ctx.userId, orderId),
-    });
-  }
-}
-```
-
-Register it in `ToolsModule`, then add it to the agent that should have access to it. Agents only see the tools you hand them explicitly. There is no global tool registry that every agent can reach into, because that is exactly how an agent ends up with access it shouldn't have.
-
-## Adding an agent
-
-1. Copy `src/agents/assistant.agent.ts`, give it a unique `id`, change instructions and tools.
-2. Export it from `AgentsModule` and `register` it in `AgentRegistry` (inject it into the registry constructor or call `register` after construction).
-3. Call `POST /chat` with `"agentId": "your-id"` (default is `assistant`).
-
-The example agent uses `ToolLoopAgent` with a step limit, so a confused model can't loop forever and run up your bill.
+To add a tool or agent, follow [Lesson 2](docs/lessons/02-adding-features.md).
 
 ## Conversations
 
